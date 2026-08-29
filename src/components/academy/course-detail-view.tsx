@@ -6,6 +6,8 @@ import Link from 'next/link';
 
 import { AcademyHeroVisual } from '@/components/academy/academy-hero-visual';
 import { CourseHeroDecoration } from '@/components/academy/hero-decorations';
+import { useAuth } from '@/components/providers/auth-provider';
+import { useAuthModal } from '@/components/providers/auth-modal-provider';
 import { buildAcademyHeroSlides } from '@/lib/academy-hero-media';
 import type { StorefrontAcademyCourseDetail } from '@/lib/storefront-academy-courses-api';
 import { useTranslation } from '@/lib/i18n-context';
@@ -14,6 +16,8 @@ type Props = { course: StorefrontAcademyCourseDetail };
 
 export function CourseDetailView({ course }: Props) {
   const { t } = useTranslation();
+  const { isAuthenticated } = useAuth();
+  const { openAuthModal } = useAuthModal();
   const [tab, setTab] = useState<'about' | 'units'>('about');
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const slides = buildAcademyHeroSlides({
@@ -41,7 +45,25 @@ export function CourseDetailView({ course }: Props) {
             <h1>{course.title}</h1>
             <p className="hero__lead">{course.summary}</p>
             <div className="hero__actions">
-              <Link href={`/courses/${course.slug}/learn`} className="btn-primary">{t('academy.course.startCourse')}</Link>
+              {isAuthenticated ? (
+                <a
+                  href={`/courses/${course.slug}/learn`}
+                  className="btn-primary"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {t('academy.course.startCourse')}
+                </a>
+              ) : (
+                <>
+                  <button type="button" className="btn-primary" onClick={() => openAuthModal('register')}>
+                    {t('academy.auth.enroll')}
+                  </button>
+                  <button type="button" className="btn-secondary" onClick={() => openAuthModal('login')}>
+                    {t('academy.nav.login')}
+                  </button>
+                </>
+              )}
             </div>
           </div>
           <AcademyHeroVisual slides={slides} fallback={<CourseHeroDecoration />} />

@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 
 import { CourseFrame } from '@/components/layout/course-frame';
+import { AuthModalProvider } from '@/components/providers/auth-modal-provider';
+import { AuthProvider } from '@/components/providers/auth-provider';
 import { I18nProvider } from '@/lib/i18n-context';
 import { getStorefrontLocaleContext } from '@/lib/i18n-server';
 import { DEFAULT_SEO_DESCRIPTION, DEFAULT_SEO_TITLE } from '@/lib/site-config';
@@ -25,9 +27,13 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
     <html lang={htmlLang} dir={direction}>
       <body className={inter.className}>
         <I18nProvider locale={locale} initialUiStrings={uiStrings}>
-          <CourseFrame languages={languages} locale={locale}>
-            {children}
-          </CourseFrame>
+          <AuthProvider>
+            <AuthModalProvider>
+              <CourseFrame languages={languages} locale={locale}>
+                {children}
+              </CourseFrame>
+            </AuthModalProvider>
+          </AuthProvider>
         </I18nProvider>
       </body>
     </html>

@@ -6,6 +6,8 @@ import Link from 'next/link';
 
 import { AcademyHeroVisual } from '@/components/academy/academy-hero-visual';
 import { CertificateHeroDecoration } from '@/components/academy/hero-decorations';
+import { useAuth } from '@/components/providers/auth-provider';
+import { useAuthModal } from '@/components/providers/auth-modal-provider';
 import { buildAcademyHeroSlides } from '@/lib/academy-hero-media';
 import type { StorefrontAcademyCertificateDetail } from '@/lib/storefront-academy-certificates-api';
 import { useTranslation } from '@/lib/i18n-context';
@@ -14,6 +16,8 @@ type Props = { certificate: StorefrontAcademyCertificateDetail };
 
 export function CertificateDetailView({ certificate }: Props) {
   const { t } = useTranslation();
+  const { isAuthenticated } = useAuth();
+  const { openAuthModal } = useAuthModal();
   const [tab, setTab] = useState<'about' | 'courses'>('about');
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const firstCourse = certificate.courses[0];
@@ -41,10 +45,27 @@ export function CertificateDetailView({ certificate }: Props) {
             <p className="hero__lead">{certificate.summary}</p>
             <p className="cert-card__meta">{certificate.studentCount.toLocaleString()} {t('academy.home.enrolled')}</p>
             <div className="hero__actions">
-              {firstCourse ? (
-                <Link href={`/courses/${firstCourse.slug}`} className="btn-primary">{t('academy.certificate.enroll')}</Link>
-              ) : null}
-              <Link href="/auth" className="btn-secondary">{t('academy.nav.login')}</Link>
+              {isAuthenticated ? (
+                firstCourse ? (
+                  <a
+                    href={`/courses/${firstCourse.slug}`}
+                    className="btn-primary"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {t('academy.auth.startCourse')}
+                  </a>
+                ) : null
+              ) : (
+                <>
+                  <button type="button" className="btn-primary" onClick={() => openAuthModal('register')}>
+                    {t('academy.auth.enroll')}
+                  </button>
+                  <button type="button" className="btn-secondary" onClick={() => openAuthModal('login')}>
+                    {t('academy.nav.login')}
+                  </button>
+                </>
+              )}
             </div>
           </div>
           <AcademyHeroVisual slides={slides} fallback={<CertificateHeroDecoration />} />

@@ -3,6 +3,8 @@ import { LOCALE_COOKIE_NAME, LOCALE_REQUEST_HEADER } from '@/lib/i18n';
 const ACCESS_TOKEN_KEY = 'hongyu_front_token';
 const CART_TOKEN_KEY = 'hongyu_cart_token';
 
+export { ACCESS_TOKEN_KEY };
+
 function readLocaleCookie(): string | undefined {
   if (typeof document === 'undefined') {
     return undefined;
@@ -105,13 +107,39 @@ type FetchOptions = RequestInit & {
   locale?: string;
 };
 
+export class ApiRequestError extends Error {
+  readonly status: number;
+  readonly code?: string;
+
+  constructor(message: string, status: number, code?: string) {
+    super(message);
+    this.name = 'ApiRequestError';
+    this.status = status;
+    this.code = code;
+  }
+}
+
+export function isUnauthorizedError(error: unknown): boolean {
+  return error instanceof ApiRequestError && (error.status === 401 || error.status === 403);
+}
+
 async function parseJsonResponse<T>(response: Response, requestUrl?: string): Promise<T> {
   if (!response.ok) {
     const payload = await response.json().catch(() => null);
     const message =
-      payload && typeof payload === 'object' && 'message' in payload ? String(payload.message) : response.statusText;
+      payload && typeof payload === 'object' && 'message' in payload
+        ? String(payload.message)
+        : response.statusText;
+    const code =
+      payload && typeof payload === 'object' && 'code' in payload
+        ? String(payload.code)
+        : undefined;
     const target = requestUrl ? ` ${requestUrl}` : '';
-    throw new Error(message ? `${message} (${response.status})${target}` : `Request failed (${response.status})${target}`);
+    throw new ApiRequestError(
+      message ? `${message} (${response.status})${target}` : `Request failed (${response.status})${target}`,
+      response.status,
+      code,
+    );
   }
 
   if (response.status === 204) {
@@ -204,4 +232,28 @@ export async function apiFetch<T>(path: string, init?: FetchOptions): Promise<T>
   }
 
   return data;
+}
+
+export async function apiUploadForm<T>(path: string, formData: FormData, init?: FetchOptions): Promise<T> {
+  const { locale, ...requestInit } = init ?? {};
+  const headers = new Headers(requestInit.headers);
+  if (locale) {
+    headers.set(LOCALE_REQUEST_HEADER, locale);
+  } else {
+    const cookieLocale = readLocaleCookie();
+    if (cookieLocale) {
+      headers.set(LOCALE_REQUEST_HEADER, cookieLocale);
+    }
+  }
+
+  const url = joinUrl(path);
+  const response = await fetch(url, {
+    ...requestInit,
+    method: requestInit.method ?? 'POST',
+    body: formData,
+    headers,
+    cache: 'no-store',
+  });
+
+  return parseJsonResponse<T>(response, url);
 }
