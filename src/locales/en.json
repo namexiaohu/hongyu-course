@@ -1,0 +1,560 @@
+{
+  "common": {
+    "home": "Home",
+    "emptyDash": "—",
+    "notFound": "Not Found",
+    "all": "All",
+    "featured": "Featured",
+    "comingSoon": "Coming Soon",
+    "loadingForm": "Loading form...",
+    "previousPage": "Previous",
+    "nextPage": "Next",
+    "download": "Download",
+    "downloadArrow": "Download →",
+    "detailsArrow": "Details →",
+    "learnMoreArrow": "Learn more →",
+    "viewAllArrow": "View all →",
+    "close": "Close",
+    "documentFallback": "Document",
+    "notProvided": "Not provided",
+    "submitFailed": "Submission failed. Please try again later.",
+    "submitting": "Submitting...",
+    "requiredMark": "*",
+    "requiredHint": "Fields marked with * are required.",
+    "privacyNotice": "By submitting, you agree to our privacy policy. Your information will be kept strictly confidential."
+  },
+  "breadcrumb": {
+    "home": "Home",
+    "contactUs": "Contact Us",
+    "insights": "Insights",
+    "partnership": "Partnership",
+    "socialMedia": "Social Media",
+    "onDemandCourses": "On-demand Courses",
+    "partnerCenters": "Partner Centers",
+    "globalLayout": "Global Presence",
+    "certifiedSurgeons": "Certified Surgeons",
+    "industrySummits": "Industry Summits",
+    "companyInfo": "Company Information",
+    "solutions": "Solutions"
+  },
+  "header": {
+    "partnershipCtaDefault": "Partnership"
+  },
+  "language": {
+    "switchAriaLabel": "Language switch, current {language}",
+    "selectLanguage": "Select language"
+  },
+  "home": {
+    "banner": {
+      "exploreSolutions": "Explore solutions",
+      "learnAbout": "About us",
+      "prevSlide": "Previous slide",
+      "nextSlide": "Next slide",
+      "slideN": "Slide {index}"
+    },
+    "aboutCarousel": {
+      "slideN": "Slide {index}"
+    },
+    "sections": {
+      "solutionsEyebrow": "Solutions",
+      "aboutEyebrow": "About",
+      "aboutLearnMore": "Learn more →",
+      "statsEyebrow": "By the Numbers",
+      "globalEyebrow": "Global",
+      "insightsViewAll": "View all →",
+      "educationEyebrow": "Education"
+    },
+    "insights": {
+      "eyebrow": "Insights & News",
+      "titleLine1": "Technology frontiers &",
+      "titleLine2": "clinical practice",
+      "leadWithCompany": "Latest updates from {companyName}'s R&D center, partner hospitals, and industry conferences.",
+      "leadFallback": "Latest technology trends, clinical research, and surgeon experience from our network."
+    }
+  },
+  "cta": {
+    "partnership": {
+      "eyebrow": "Partnership",
+      "button": "Partnership inquiry"
+    },
+    "home": {
+      "title": "We look forward to partnering with you",
+      "lead": "Whether you are exploring product collaboration, market expansion, or co-marketing, we welcome the conversation."
+    },
+    "centers": {
+      "title": "Build regional partner centers together",
+      "lead": "Hospitals and research institutions are welcome to discuss co-building partner centers to expand regional services and exchange."
+    },
+    "surgeons": {
+      "title": "Join the {companyName} professional network",
+      "titleFallback": "Join our professional network",
+      "lead": "Clinical institutions and surgeons are welcome to partner with us to advance professional exchange and product adoption."
+    },
+    "summit": {
+      "title": "Conference partnership inquiries welcome",
+      "lead": "For co-hosted events, sponsorship, or brand collaboration, contact us to foster industry communication and exchange."
+    },
+    "insights": {
+      "title": "Collaboration opportunities welcome",
+      "lead": "For content syndication, co-publishing, or clinical and market collaboration, we welcome further discussion."
+    },
+    "solutions": {
+      "title": "Explore product and technology partnerships",
+      "lead": "Whether you need clinical collaboration, distribution, or co-development, we welcome further discussion."
+    },
+    "default": {
+      "title": "Collaboration opportunities welcome",
+      "lead": "For product collaboration, market expansion, or co-marketing, we welcome the conversation."
+    }
+  },
+  "contact": {
+    "metaTitle": "Contact Us",
+    "eyebrow": "Contact Us",
+    "title": "Get in touch",
+    "lead": "Whether you need product information, technical support, or partnership discussions, our team will respond within 24 hours.",
+    "phoneLabel": "Phone",
+    "emailLabel": "Email",
+    "addressLabel": "Headquarters",
+    "hoursLabel": "Business hours",
+    "mapAlt": "Office location",
+    "formTitle": "Send a message",
+    "formSubtitle": "Fill in the form below and we will contact you as soon as possible."
+  },
+  "company": {
+    "metaTitle": "Company Information",
+    "eyebrow": "Corporate Information",
+    "title": "Company Information",
+    "lead": "Business registration, organizational structure, and public documents for {companyName}.",
+    "registration": {
+      "eyebrow": "Registration",
+      "title": "Company profile"
+    },
+    "organization": {
+      "eyebrow": "Organization",
+      "title": "Leadership team"
+    },
+    "offices": {
+      "eyebrow": "Offices",
+      "title": "Global offices"
+    },
+    "documents": {
+      "eyebrow": "Documents",
+      "title": "Public documents"
+    }
+  },
+  "media": {
+    "metaTitle": "Social Media",
+    "eyebrow": "Social Media",
+    "title": "Follow {companyName}",
+    "lead": "Follow us on global social platforms for product updates, clinical stories, and industry event highlights.",
+    "platforms": {
+      "eyebrow": "Follow Us",
+      "title": "Global social media",
+      "subtitle": "Choose your preferred platform to stay connected.",
+      "qrHint": "Hover icon for QR code"
+    },
+    "contacts": {
+      "eyebrow": "Contact",
+      "title": "Global business contacts",
+      "subtitleWithEmail": "Reach the regional office closest to you, or email {businessEmail}.",
+      "subtitleFallback": "Reach the regional office closest to you, or email our global partnerships team.",
+      "phone": "Phone",
+      "contactPerson": "Contact",
+      "email": "Email",
+      "address": "Address"
+    },
+    "posts": {
+      "eyebrow": "Recent",
+      "title": "Featured social content",
+      "subtitle": "Highlights from our social channels."
+    }
+  },
+  "partnership": {
+    "metaTitle": "Partnership",
+    "heroEyebrow": "Business Partnership",
+    "heroTitleLine1": "Building the future of",
+    "heroTitleLine2": "veterinary partnerships",
+    "heroLeadWithCompany": "{companyName} welcomes partnerships with veterinary institutions, industry partners, and investors worldwide.",
+    "heroLeadFallback": "We welcome partnerships with veterinary institutions, industry partners, and investors worldwide.",
+    "coopTypes": {
+      "distributionTitle": "Channel distribution",
+      "distributionDesc": "Become an authorized regional distributor and expand your local market.",
+      "academicTitle": "Academic collaboration",
+      "academicDesc": "Joint clinical research and academic promotion programs.",
+      "oemTitle": "OEM / ODM",
+      "oemDesc": "Custom product design and manufacturing services.",
+      "investmentTitle": "Strategic investment",
+      "investmentDesc": "Equity partnership opportunities for institutional investors."
+    },
+    "formInfo": {
+      "eyebrow": "Inquiry",
+      "title": "Partnership inquiry",
+      "lead": "Our business team will review your information within 2 business days and assign a dedicated account manager.",
+      "bullet1": "Detailed company background and business needs help us match the right partnership model faster.",
+      "bullet2": "All information is kept strictly confidential and used only for business communication.",
+      "bullet3": "For urgent matters, please call our business hotline directly.",
+      "hotlineLabel": "Business hotline",
+      "emailLabel": "Business email"
+    }
+  },
+  "course": {
+    "metaTitle": "On-demand Courses",
+    "title": "On-demand courses coming soon",
+    "descriptionWithNames": "We are producing on-demand courses covering {names} and more, expected to launch in Q4 2026. Certified surgeons will receive complimentary access.",
+    "descriptionFallback": "We are producing on-demand training courses, expected to launch in Q4 2026. Certified surgeons will receive complimentary access.",
+    "linkTraining": "Training programs",
+    "linkSummits": "Industry summits"
+  },
+  "centers": {
+    "metaTitle": "Partner Centers",
+    "eyebrow": "Partner Centers",
+    "title": "Global partner hospitals and research centers",
+    "lead": "We co-build a clinical collaboration network with leading animal hospitals and research institutions worldwide to advance evidence-based medicine and innovation.",
+    "regionCount": "{count} partner centers"
+  },
+  "solutionsList": {
+    "metaTitle": "Solutions",
+    "eyebrow": "Solutions",
+    "title": "Full product-line solutions",
+    "lead": "Covering animal surgery, sports medicine, and cardiovascular care—from mature products to pipeline programs—providing complete technical support for veterinary medicine.",
+    "viewDetails": "View details",
+    "empty": "No solutions available"
+  },
+  "surgeons": {
+    "metaTitle": "Certified Surgeons",
+    "eyebrow": "Certified Surgeons",
+    "title": "Global certified surgeon directory",
+    "leadWithCompanyAndProducts": "Veterinarians certified through {companyName}'s training programs, proficient in standard workflows for {products} and other core products.",
+    "leadWithCompany": "Veterinarians certified through {companyName}'s training and assessment programs.",
+    "leadFallback": "Certified veterinarians trained in standard operating workflows for core products."
+  },
+  "summit": {
+    "metaTitle": "Industry Summits",
+    "eyebrow": "Industry Summit",
+    "title": "Global veterinary industry conferences",
+    "heroLeadWithCompany": "{companyName} participates in major global veterinary conferences to share clinical innovations and industry insights.",
+    "heroLeadFallback": "Participating in major global veterinary conferences to share clinical innovations and industry insights.",
+    "upcoming": {
+      "eyebrow": "Upcoming",
+      "title": "Upcoming industry conferences",
+      "leadWithNames": "Upcoming events include {names} and more.",
+      "leadWithCompany": "Explore industry summits and conferences {companyName} will attend.",
+      "leadFallback": "Explore upcoming industry summits and conferences."
+    },
+    "past": {
+      "eyebrow": "Past Events",
+      "title": "Past conference highlights"
+    },
+    "empty": "No conference data available",
+    "status": {
+      "upcoming": "Upcoming",
+      "registering": "Registration open",
+      "completed": "Completed"
+    },
+    "cardLink": "Learn more →",
+    "weekdays": {
+      "0": "Sunday",
+      "1": "Monday",
+      "2": "Tuesday",
+      "3": "Wednesday",
+      "4": "Thursday",
+      "5": "Friday",
+      "6": "Saturday"
+    }
+  },
+  "insights": {
+    "metaTitle": "Insights",
+    "pastHighlights": "Past highlights",
+    "article": {
+      "toc": "Table of contents",
+      "relatedReading": "Related reading",
+      "moreEyebrow": "More",
+      "relatedTitle": "Related insights"
+    }
+  },
+  "forms": {
+    "contact": {
+      "summitPrefill": "Summit registration interest: {summit}\n\n",
+      "fullName": "Full name",
+      "fullNamePlaceholder": "Your name",
+      "country": "Country",
+      "countryPlaceholder": "Country or region",
+      "company": "Hospital / organization",
+      "companyPlaceholder": "Hospital or organization name",
+      "jobTitle": "Title",
+      "jobTitlePlaceholder": "Your title or role",
+      "email": "Email",
+      "emailPlaceholder": "your@email.com",
+      "phone": "Phone",
+      "phonePlaceholder": "Phone number",
+      "topic": "Inquiry type",
+      "topicPlaceholder": "Select inquiry type",
+      "body": "Message",
+      "bodyPlaceholder": "Describe your needs or questions...",
+      "submit": "Submit message",
+      "success": "Your message has been submitted. We will contact you soon."
+    },
+    "partnership": {
+      "title": "Partnership inquiry form",
+      "companySection": "Company information",
+      "contactSection": "Contact information",
+      "intentSection": "Partnership intent",
+      "companyName": "Company name",
+      "companyNamePlaceholder": "Full legal company name",
+      "companyWebsite": "Company website",
+      "companyWebsitePlaceholder": "https://",
+      "country": "Country / region",
+      "countryPlaceholder": "Country or region",
+      "companySize": "Company size",
+      "selectPlaceholder": "Please select",
+      "contactName": "Contact name",
+      "contactNamePlaceholder": "Your name",
+      "contactTitle": "Job title",
+      "contactTitlePlaceholder": "Your job title",
+      "workEmail": "Work email",
+      "workEmailPlaceholder": "your@company.com",
+      "phone": "Phone",
+      "phonePlaceholder": "+1",
+      "coopType": "Partnership type",
+      "coopTypePlaceholder": "Select partnership type",
+      "scale": "Expected partnership scale",
+      "detail": "Partnership requirements",
+      "detailPlaceholder": "Describe your partnership needs, goals, and timeline...",
+      "submit": "Submit partnership inquiry",
+      "success": "Your partnership inquiry has been submitted. Our business team will contact you soon.",
+      "sizeOptions": {
+        "1-10": "1–10 employees",
+        "11-50": "11–50 employees",
+        "51-200": "51–200 employees",
+        "201-1000": "201–1,000 employees",
+        "1000+": "1,000+ employees"
+      },
+      "coopOptions": {
+        "distribution": "Channel distribution / agency",
+        "academic": "Academic collaboration / clinical research",
+        "oem": "OEM / ODM customization",
+        "investment": "Strategic investment",
+        "other": "Other"
+      },
+      "scaleOptions": {
+        "pilot": "Initial pilot partnership",
+        "annual": "Annual framework partnership",
+        "longTerm": "Long-term strategic partnership"
+      }
+    }
+  },
+  "inquiry": {
+    "types": {
+      "contact": "Contact us",
+      "partnership": "Partnership"
+    },
+    "topics": {
+      "product": "Product inquiry",
+      "technical": "Technical support",
+      "training": "Training & certification",
+      "afterSales": "After-sales service",
+      "summit": "Industry summit registration",
+      "other": "Other"
+    },
+    "messages": {
+      "contactTemplate": "Inquiry type: {topic}\nMessage:\n{body}",
+      "partnershipTemplate": "Partnership type: {coopType}\nExpected scale: {scale}\nRequirements:\n{detail}"
+    }
+  },
+  "product": {
+    "overviewEyebrow": "Overview",
+    "viewSpecifications": "View specifications",
+    "getMaterials": "Get product materials",
+    "specificationsEyebrow": "Specifications",
+    "specificationsTitle": "Specifications",
+    "parameterColumn": "Parameter",
+    "specificationColumn": "Specification",
+    "downloadsEyebrow": "Downloads",
+    "downloadsTitle": "Downloads",
+    "downloadsLead": "Technical documents and clinical materials for {productName}.",
+    "relatedEyebrow": "Related",
+    "relatedTitle": "Other models in this series",
+    "attachmentTypes": {
+      "pdf": "PDF",
+      "image": "Image",
+      "document": "Document",
+      "file": "File"
+    },
+    "gallery": {
+      "previous": "Previous",
+      "next": "Next",
+      "slidesAria": "Gallery slides",
+      "showVideo": "Show video",
+      "showImageN": "Show image {index}"
+    }
+  },
+  "solution": {
+    "getMaterials": "Get product materials",
+    "materialsEyebrow": "Resources · Product materials",
+    "materialsTitle": "Product materials",
+    "materialsDownload": "Download",
+    "relatedEyebrow": "More · Explore",
+    "relatedTitle": "Explore more solutions"
+  },
+  "detail": {
+    "summit": {
+      "agendaEyebrow": "Agenda",
+      "agendaTitle": "Core agenda",
+      "registerNow": "Register now",
+      "viewAgenda": "View agenda",
+      "venueEyebrow": "Venue",
+      "venueFallback": "Venue",
+      "addressLabel": "Address",
+      "timeLabel": "Event time",
+      "scaleLabel": "Event scale",
+      "transportLabel": "Transportation",
+      "registerSectionEyebrow": "Register",
+      "registerSectionTitle": "Register for the event",
+      "registerSectionLead": "Seats are limited. Submit your registration interest via the contact page; our events team will confirm within 3 business days.",
+      "speakersEyebrow": "Speakers",
+      "speakersTitle": "Featured speakers",
+      "speakerBioLabel": "Speaker bio",
+      "sponsorsEyebrow": "Sponsors",
+      "sponsorsTitle": "Conference sponsors",
+      "sponsorTiers": {
+        "diamond": "Diamond sponsors",
+        "gold": "Gold sponsors",
+        "silver": "Silver sponsors"
+      },
+      "sponsorTierBadges": {
+        "diamond": "Diamond Sponsor",
+        "gold": "Gold Sponsor",
+        "silver": "Silver Sponsor"
+      },
+      "sponsorCount": "{count} sponsors"
+    },
+    "center": {
+      "metaTitleSuffix": "Partner Center",
+      "aboutEyebrow": "About",
+      "aboutTitle": "About {centerName}",
+      "surgeonsEyebrow": "Surgeons",
+      "surgeonsTitle": "{count} certified surgeons",
+      "contactLabel": "Contact",
+      "address": "Address",
+      "businessHours": "Business hours",
+      "contactMethod": "Contact",
+      "email": "Email",
+      "website": "Website",
+      "cooperationInfo": "Partnership information",
+      "region": "Region",
+      "relatedEyebrow": "Related",
+      "relatedTitle": "Other partner centers in {regionLabel}",
+      "surgeonSubtitle": {
+        "certifiedYear": "{year} certified",
+        "surgeries": "{count} surgeries"
+      },
+      "gradeShort": {
+        "platinum": "Platinum",
+        "gold": "Gold",
+        "silver": "Silver"
+      },
+      "visitHospital": "Visit hospital page →"
+    },
+    "surgeon": {
+      "metaTitleSuffix": "Certified Surgeon",
+      "aboutEyebrow": "About",
+      "aboutTitle": "Biography",
+      "affiliatedCenters": "Affiliated partner centers",
+      "certificationInfo": "Certification",
+      "certificationLevel": "Certification level",
+      "certificationYear": "Certification year",
+      "totalSurgeries": "Total surgeries",
+      "specialties": "Specialties",
+      "contactSurgeon": "Contact surgeon",
+      "contactCopy": "For surgical consultation or academic exchange, please contact through the affiliated hospital.",
+      "relatedEyebrow": "Related",
+      "relatedTitleWithCenter": "Other surgeons at {centerName}",
+      "relatedTitleFallback": "Other surgeons at the same center",
+      "statCertificationYear": "Certification year",
+      "statTotalSurgeries": "Total surgeries"
+    }
+  },
+  "map": {
+    "ariaLabel": "Global partner center map",
+    "svgAriaLabel": "Global partner regions map",
+    "loadFailed": "Failed to load map",
+    "loading": "Loading map…",
+    "partnerCenters": "Partner centers",
+    "noCenters": "No partner centers",
+    "detailsArrow": "Details →",
+    "tipFoot": "Click an entry to open the partner center detail page.",
+    "regions": {
+      "na": "North America",
+      "sa": "South America",
+      "europe": "Europe",
+      "china": "China",
+      "apac": "Asia Pacific",
+      "africa": "Africa"
+    }
+  },
+  "academy": {
+    "nav": {
+      "explore": "Explore",
+      "myLearning": "My Learning",
+      "searchPlaceholder": "What do you want to learn?",
+      "login": "Log in"
+    },
+    "footer": {
+      "certificates": "Certificates",
+      "help": "Help Center"
+    },
+    "home": {
+      "welcome": "Welcome back",
+      "continueLearning": "Continue learning",
+      "popularCertificates": "Popular certificates",
+      "startNow": "Start now",
+      "viewCertificate": "View certificate",
+      "enrolled": "learners enrolled"
+    },
+    "certificate": {
+      "about": "About",
+      "courses": "Courses",
+      "outcomes": "What you'll learn",
+      "skills": "Skills you'll gain",
+      "tools": "Tools you'll use",
+      "enroll": "Enroll now",
+      "courseList": "Courses in this certificate",
+      "teachers": "{count} instructors",
+      "instructorTeam": "HONGYU Clinical Faculty Team",
+      "academyName": "HONGYU Academy",
+      "instructorStats": "{courses} courses · {students} students",
+      "provider": "Provider"
+    },
+    "course": {
+      "about": "About",
+      "units": "Units",
+      "startCourse": "Start course",
+      "modules": "Course modules",
+      "partOf": "Part of",
+      "instructorStats": "{units} units · {students} students"
+    },
+    "auth": {
+      "login": "Log in",
+      "register": "Register",
+      "email": "Email",
+      "password": "Password",
+      "name": "Full name"
+    },
+    "exam": {
+      "submit": "Submit exam",
+      "next": "Next",
+      "prev": "Previous",
+      "passLine": "Passing score"
+    },
+    "result": {
+      "passed": "Congratulations, you passed!",
+      "failed": "Keep going, try again.",
+      "getCredential": "Get certificate"
+    },
+    "credential": {
+      "title": "Your certificate",
+      "download": "Download PDF",
+      "share": "Share"
+    }
+  }
+}
