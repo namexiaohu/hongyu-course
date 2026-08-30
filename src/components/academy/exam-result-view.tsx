@@ -15,7 +15,7 @@ type Props = {
   slug: string;
   attemptId: string;
   source: 'submit' | 'review';
-  certificateCourseId?: string;
+  certificateCourseId: string;
 };
 
 type Filter = 'all' | 'correct' | 'wrong';
@@ -146,9 +146,9 @@ export function ExamResultView({ slug, attemptId, source, certificateCourseId }:
   const { t } = useTranslation();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const { openAuthModal } = useAuthModal();
-  const learnHref = certificateCourseId ? academyLearnPath(slug, certificateCourseId) : `/courses/${slug}/learn`;
-  const courseHref = certificateCourseId ? academyCourseDetailPath(slug, certificateCourseId) : `/courses/${slug}`;
-  const examHref = certificateCourseId ? academyExamPath(slug, certificateCourseId) : `/courses/${slug}/exam`;
+  const learnHref = academyLearnPath(slug, certificateCourseId);
+  const courseHref = academyCourseDetailPath(slug, certificateCourseId);
+  const examHref = academyExamPath(slug, certificateCourseId);
   const [result, setResult] = useState<ExamResultResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
@@ -161,16 +161,16 @@ export function ExamResultView({ slug, attemptId, source, certificateCourseId }:
       setLoading(false);
       return;
     }
-    if (!attemptId) {
+    if (!attemptId || !certificateCourseId) {
       setNotFound(true);
       setLoading(false);
       return;
     }
-    void getExamResult(attemptId)
+    void getExamResult(attemptId, certificateCourseId)
       .then(setResult)
       .catch(() => setNotFound(true))
       .finally(() => setLoading(false));
-  }, [attemptId, authLoading, isAuthenticated]);
+  }, [attemptId, certificateCourseId, authLoading, isAuthenticated]);
 
   const filteredReview = useMemo(() => {
     if (!result) return [];
@@ -198,7 +198,7 @@ export function ExamResultView({ slug, attemptId, source, certificateCourseId }:
     return (
       <div className="exam-gate">
         <p>{t('academy.result.notFound')}</p>
-        <Link href={`/courses/${slug}`} className="btn-secondary" style={{ marginTop: 16, display: 'inline-flex' }}>
+        <Link href={courseHref} className="btn-secondary" style={{ marginTop: 16, display: 'inline-flex' }}>
           {t('academy.result.backToCourse')}
         </Link>
       </div>

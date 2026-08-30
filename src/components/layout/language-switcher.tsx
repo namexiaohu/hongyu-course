@@ -15,8 +15,6 @@ import {
 type LanguageSwitcherProps = {
   languages: StorefrontLanguage[];
   initialLocale: string;
-  /** 首页 overlay 顶栏未滚动时为 true，用于样式适配 */
-  transparent?: boolean;
 };
 
 function readStoredLocale(languages: StorefrontLanguage[], fallback: string) {
@@ -33,7 +31,6 @@ function persistLocaleChoice(language: StorefrontLanguage) {
 export function LanguageSwitcher({
   languages,
   initialLocale,
-  transparent = false,
 }: LanguageSwitcherProps) {
   const { t } = useTranslation();
   const [locale, setLocale] = useState(() => readStoredLocale(languages, initialLocale));
@@ -84,7 +81,7 @@ export function LanguageSwitcher({
   return (
     <div
       ref={rootRef}
-      className={`lang-switcher${transparent ? ' lang-switcher-transparent' : ''}${open ? ' is-open' : ''}`}
+      className={`lang-switcher${open ? ' is-open' : ''}`}
     >
       <button
         type="button"

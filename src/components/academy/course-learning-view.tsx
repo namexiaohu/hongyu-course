@@ -102,7 +102,7 @@ export function CourseLearningView({ course, certificateCourseId }: Props) {
         if (!cancelled) setCompletedIds(new Set());
       });
 
-    void getExamEligibility(course.slug)
+    void getExamEligibility(course.slug, certificateCourseId)
       .then((eligibility) => {
         if (cancelled) return;
         setCertificateNumber(eligibility.certificateNumber ?? null);
@@ -114,7 +114,7 @@ export function CourseLearningView({ course, certificateCourseId }: Props) {
     return () => {
       cancelled = true;
     };
-  }, [course.slug, isAuthenticated]);
+  }, [course.slug, certificateCourseId, isAuthenticated]);
 
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -303,7 +303,7 @@ export function CourseLearningView({ course, certificateCourseId }: Props) {
               <rect x="3" y="3" width="18" height="18" rx="2" />
               <path d="M3 9h18" />
             </svg>
-            <span>HONGYU Academy</span>
+            <span>{t('academy.certificate.academyName')}</span>
           </div>
           <Link href={courseHref} className="sidebar-left-title" title={course.title}>
             {course.title}

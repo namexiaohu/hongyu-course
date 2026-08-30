@@ -2,12 +2,8 @@ import { redirect } from 'next/navigation';
 
 import { CertificateCatalogView } from '@/components/academy/certificate-catalog-view';
 import { getPageTranslations, getStorefrontLocaleContext } from '@/lib/i18n-server';
+import { parsePage } from '@/lib/parse-page';
 import { getStorefrontAcademyCertificateList } from '@/lib/storefront-academy-certificates-api';
-
-function parsePage(value: string | undefined) {
-  const page = Number.parseInt(value ?? '1', 10);
-  return Number.isFinite(page) && page > 0 ? page : 1;
-}
 
 export default async function SearchPage({
   searchParams,
@@ -44,8 +40,6 @@ export default async function SearchPage({
         if (target > 1) params.set('page', String(target));
         return `/search?${params.toString()}`;
       }}
-      academyName={t('academy.certificate.academyName')}
-      academyName={t('academy.certificate.academyName')}
       skillsPrefix={t('academy.certificate.skills')}
     />
   );

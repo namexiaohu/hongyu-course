@@ -7,12 +7,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from '@/components/providers/auth-provider';
 import { useAuthModal } from '@/components/providers/auth-modal-provider';
 import { PageLoading } from '@/components/ui/page-loading';
-import { academyLearnPath } from '@/lib/academy-certificate-course';
+import { academyExamResultPath, academyLearnPath } from '@/lib/academy-certificate-course';
 import type { ExamQuestionPublic, ExamStartResponse, ExamUserAnswer } from '@/lib/storefront-academy-exams-api';
 import { startExam, submitExam } from '@/lib/storefront-academy-exams-api';
 import { useTranslation } from '@/lib/i18n-context';
 
-type Props = { slug: string; certificateCourseId?: string };
+type Props = { slug: string; certificateCourseId: string };
 
 function isAnswered(type: ExamQuestionPublic['questionType'], value: ExamUserAnswer | undefined) {
   if (value === undefined || value === null) return false;
@@ -32,7 +32,7 @@ export function ExamPageView({ slug, certificateCourseId }: Props) {
   const router = useRouter();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const { openAuthModal } = useAuthModal();
-  const learnHref = certificateCourseId ? academyLearnPath(slug, certificateCourseId) : `/courses/${slug}/learn`;
+  const learnHref = academyLearnPath(slug, certificateCourseId);
 
   const [session, setSession] = useState<ExamStartResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -78,7 +78,7 @@ export function ExamPageView({ slug, certificateCourseId }: Props) {
     setTimedOut(false);
     setAnswerRequiredHint(false);
     try {
-      const data = await startExam(slug);
+      const data = await startExam(slug, certificateCourseId);
       setSession(data);
       setCurrentIndex(0);
       setAnswers({});
@@ -98,7 +98,7 @@ export function ExamPageView({ slug, certificateCourseId }: Props) {
     } finally {
       setLoading(false);
     }
-  }, [slug]);
+  }, [slug, certificateCourseId]);
 
   useEffect(() => {
     if (authLoading) return;
@@ -274,12 +274,7 @@ export function ExamPageView({ slug, certificateCourseId }: Props) {
       await submitExam(session.attemptId, payload);
       allowLeaveRef.current = true;
       setLeaveAllowed(true);
-      const resultQuery = new URLSearchParams({
-        attemptId: session.attemptId,
-        source: 'submit',
-      });
-      if (certificateCourseId) resultQuery.set('certificateCourseId', certificateCourseId);
-      router.push(`/courses/${slug}/exam/result?${resultQuery.toString()}`);
+      router.push(academyExamResultPath(slug, certificateCourseId, session.attemptId, 'submit'));
     } catch (error) {
       const msg = error instanceof Error ? error.message : '';
       if (msg.includes('TIME_EXPIRED')) {
@@ -441,7 +436,7 @@ export function ExamPageView({ slug, certificateCourseId }: Props) {
               requestLeave(learnHref);
             }}
           >
-            HONGYU<span> Academy</span>
+            {t('academy.certificate.academyName')}
           </Link>
           <div className="exam-topbar-divider" />
           <span className="exam-topbar-exam">{session.title}</span>

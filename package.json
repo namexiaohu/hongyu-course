@@ -12,9 +12,6 @@
     "check": "eslint . && tsc --noEmit"
   },
   "dependencies": {
-    "@ant-design/icons": "^6.2.5",
-    "antd": "^6.4.4",
-    "html2canvas": "^1.4.1",
     "jspdf": "^4.2.1",
     "next": "^16.2.6",
     "pinyin-pro": "^3.29.3",

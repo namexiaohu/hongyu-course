@@ -14,7 +14,6 @@ function resolveHomeSiteUrl() {
   return homeSiteUrl;
 }
 
-export const SITE_NAME = '竑宇医疗学院';
 export const SITE_BRAND = 'HONGYU Medical Academy';
 export const SITE_URL = resolveSiteUrl();
 export const HOME_SITE_URL = resolveHomeSiteUrl();

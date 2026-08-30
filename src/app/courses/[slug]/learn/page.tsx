@@ -1,11 +1,8 @@
-import { notFound, redirect } from 'next/navigation';
+import { notFound } from 'next/navigation';
 
-import { CertificateCoursePicker } from '@/components/academy/certificate-course-picker';
 import { CourseLearningView } from '@/components/academy/course-learning-view';
-import {
-  academyLearnPath,
-  resolveCertificateCourseId,
-} from '@/lib/academy-certificate-course';
+import { MissingCertificateContext } from '@/components/academy/missing-certificate-context';
+import { resolveCertificateCourseId } from '@/lib/academy-certificate-course';
 import { getStorefrontLocaleContext } from '@/lib/i18n-server';
 import { getStorefrontAcademyCourseBySlug } from '@/lib/storefront-academy-courses-api';
 
@@ -22,11 +19,8 @@ export default async function CourseLearningPage({ params, searchParams }: PageP
   if (!course) notFound();
 
   const resolved = resolveCertificateCourseId(rawId, course.certificateLinks ?? []);
-  if (resolved.kind === 'empty' || resolved.kind === 'picker') {
-    return <CertificateCoursePicker course={course} mode="learn" />;
-  }
-  if (resolved.kind === 'redirect') {
-    redirect(academyLearnPath(slug, resolved.id));
+  if (resolved.kind !== 'ok') {
+    return <MissingCertificateContext />;
   }
 
   return <CourseLearningView course={course} certificateCourseId={resolved.id} />;

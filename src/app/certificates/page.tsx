@@ -1,11 +1,7 @@
 import { CertificateCatalogView } from '@/components/academy/certificate-catalog-view';
 import { getPageTranslations, getStorefrontLocaleContext } from '@/lib/i18n-server';
+import { parsePage } from '@/lib/parse-page';
 import { getStorefrontAcademyCertificateList } from '@/lib/storefront-academy-certificates-api';
-
-function parsePage(value: string | undefined) {
-  const page = Number.parseInt(value ?? '1', 10);
-  return Number.isFinite(page) && page > 0 ? page : 1;
-}
 
 export default async function CertificatesPage({
   searchParams,

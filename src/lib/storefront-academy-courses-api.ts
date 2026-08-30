@@ -1,4 +1,4 @@
-import { serverFetch } from '@/lib/api-client';
+import { ApiRequestError, serverFetch } from '@/lib/api-client';
 
 export type StorefrontAcademyLessonMaterial = {
   name: string;
@@ -62,7 +62,8 @@ export async function getStorefrontAcademyCourseBySlug(slug: string, locale?: st
       `/api/front/academy/courses/${encodeURIComponent(slug)}`,
       { locale },
     );
-  } catch {
-    return null;
+  } catch (error) {
+    if (error instanceof ApiRequestError && error.status === 404) return null;
+    throw error;
   }
 }

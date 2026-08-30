@@ -34,28 +34,7 @@ export const UI_STRING_REGISTRY: Record<string, UiStringRegistryEntry> = {
 };
 
 export const UI_STRING_PREFETCH_GROUPS = [
-  'common',
-  'breadcrumb',
-  'header',
   'language',
-  'home',
-  'cta',
-  'contact',
-  'company',
-  'media',
-  'partnership',
-  'course',
-  'centers',
-  'solutionsList',
-  'surgeons',
-  'summit',
-  'insights',
-  'forms',
-  'inquiry',
-  'product',
-  'solution',
-  'detail',
-  'map',
   'academy',
 ] as const;
 

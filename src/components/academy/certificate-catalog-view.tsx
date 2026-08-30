@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 
 import Link from 'next/link';
 
-import { CertificateCatalogCard } from '@/components/academy/certificate-catalog-card';
+import { CertificateCard } from '@/components/academy/certificate-card';
 import type { StorefrontAcademyCertificateListItem } from '@/lib/storefront-academy-certificates-api';
 
 type Props = {
@@ -36,9 +36,14 @@ export function CertificateCatalogView({
       </div>
       <div className="catalog-grid">
         {items.map((item) => (
-          <CertificateCatalogCard
+          <CertificateCard
             key={item.slug}
-            item={item}
+            href={item.href}
+            title={item.title}
+            subtitle={item.subtitle}
+            coverImage={item.coverImage}
+            badgeLabel={item.badgeLabel}
+            skills={item.skills}
             skillsPrefix={skillsPrefix}
           />
         ))}

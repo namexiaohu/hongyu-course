@@ -5,6 +5,9 @@ export type MyExamRecord = {
   courseSlug: string;
   courseTitle: string;
   examTitle: string;
+  certificateCourseId: string;
+  certificateTitle: string;
+  certificateSlug: string;
   score: number;
   totalScore: number;
   scorePercent: number;

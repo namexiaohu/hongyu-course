@@ -13,6 +13,7 @@ export type ExamQuestionPublic = {
 export type ExamEligibilityResponse = {
   courseSlug: string;
   courseId: string;
+  certificateCourseId: string;
   isCourseComplete: boolean;
   hasQuestionBanks: boolean;
   submittedAttempts: number;
@@ -25,6 +26,7 @@ export type ExamEligibilityResponse = {
 export type ExamStartResponse = {
   attemptId: string;
   courseSlug: string;
+  certificateCourseId: string;
   questionBankId: string;
   title: string;
   passScorePercent: number;
@@ -60,6 +62,9 @@ export type ExamResultReviewItem = {
 export type ExamResultResponse = {
   attemptId: string;
   courseSlug: string;
+  certificateCourseId: string;
+  certificateTitle: string;
+  certificateSlug: string;
   title: string;
   score: number;
   totalScore: number;
@@ -78,14 +83,17 @@ export type ExamResultResponse = {
 
 export type ExamUserAnswer = number | number[] | boolean | string;
 
-export async function getExamEligibility(courseSlug: string) {
-  return apiFetch<ExamEligibilityResponse>(`/api/front/academy/exams/${encodeURIComponent(courseSlug)}/eligibility`);
+export async function getExamEligibility(courseSlug: string, certificateCourseId: string) {
+  const params = new URLSearchParams({ certificateCourseId });
+  return apiFetch<ExamEligibilityResponse>(
+    `/api/front/academy/exams/${encodeURIComponent(courseSlug)}/eligibility?${params}`,
+  );
 }
 
-export async function startExam(courseSlug: string) {
+export async function startExam(courseSlug: string, certificateCourseId: string) {
   return apiFetch<ExamStartResponse>(`/api/front/academy/exams/${encodeURIComponent(courseSlug)}/start`, {
     method: 'POST',
-    body: JSON.stringify({}),
+    body: JSON.stringify({ certificateCourseId }),
   });
 }
 
@@ -96,6 +104,9 @@ export async function submitExam(attemptId: string, answers: Record<string, Exam
   });
 }
 
-export async function getExamResult(attemptId: string) {
-  return apiFetch<ExamResultResponse>(`/api/front/academy/exams/attempts/${encodeURIComponent(attemptId)}`);
+export async function getExamResult(attemptId: string, certificateCourseId: string) {
+  const params = new URLSearchParams({ certificateCourseId });
+  return apiFetch<ExamResultResponse>(
+    `/api/front/academy/exams/attempts/${encodeURIComponent(attemptId)}?${params}`,
+  );
 }

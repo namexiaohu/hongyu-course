@@ -1,7 +1,6 @@
 import { LOCALE_COOKIE_NAME, LOCALE_REQUEST_HEADER } from '@/lib/i18n';
 
 const ACCESS_TOKEN_KEY = 'hongyu_front_token';
-const CART_TOKEN_KEY = 'hongyu_cart_token';
 
 export { ACCESS_TOKEN_KEY };
 
@@ -89,20 +88,6 @@ export function clearAccessToken(): void {
   notifyAuthTokenChanged();
 }
 
-export function getCartToken(): string | null {
-  if (typeof window === 'undefined') {
-    return null;
-  }
-  return window.localStorage.getItem(CART_TOKEN_KEY);
-}
-
-export function setCartToken(token: string): void {
-  if (typeof window === 'undefined') {
-    return;
-  }
-  window.localStorage.setItem(CART_TOKEN_KEY, token);
-}
-
 type FetchOptions = RequestInit & {
   locale?: string;
 };
@@ -167,10 +152,6 @@ function buildHeaders(init?: FetchOptions, includeAuth = false): Headers {
     if (token) {
       headers.set('Authorization', `Bearer ${token}`);
     }
-    const cartToken = getCartToken();
-    if (cartToken) {
-      headers.set('X-Cart-Token', cartToken);
-    }
   }
   return headers;
 }
@@ -206,17 +187,6 @@ export async function serverFetch<T>(path: string, init?: FetchOptions): Promise
   return parseJsonResponse<T>(response, url);
 }
 
-function applyCartApiPayload(payload: unknown) {
-  if (!payload || typeof payload !== 'object' || typeof window === 'undefined') {
-    return;
-  }
-
-  const cartToken = 'cartToken' in payload ? payload.cartToken : undefined;
-  if (typeof cartToken === 'string' && cartToken.length > 0) {
-    setCartToken(cartToken);
-  }
-}
-
 export async function apiFetch<T>(path: string, init?: FetchOptions): Promise<T> {
   const { locale, ...requestInit } = init ?? {};
   const url = joinUrl(path);
@@ -227,10 +197,6 @@ export async function apiFetch<T>(path: string, init?: FetchOptions): Promise<T>
   });
 
   const data = await parseJsonResponse<T>(response, url);
-  if (path.includes('/api/front/cart')) {
-    applyCartApiPayload(data);
-  }
-
   return data;
 }
 

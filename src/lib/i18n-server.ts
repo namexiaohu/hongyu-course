@@ -48,11 +48,6 @@ export async function getStorefrontLocaleContext(): Promise<StorefrontLocaleCont
   };
 }
 
-export async function getServerSitePreferences(): Promise<SitePreferences> {
-  const { locale, currency, unitSystem } = await getStorefrontLocaleContext();
-  return { locale, currency, unitSystem };
-}
-
 export function getServerTranslations(locale: Locale = 'en', uiStrings: Record<string, string> = {}) {
   const t = createTranslateFn(locale, uiStrings);
   return { t, locale };

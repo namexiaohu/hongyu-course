@@ -151,9 +151,3 @@ export async function fetchProfile(): Promise<ProfileFetchResult> {
     return { status: 'unavailable' };
   }
 }
-
-/** @deprecated Prefer fetchProfile() so callers can distinguish auth vs network failures. */
-export async function getProfile(): Promise<UserProfile | null> {
-  const result = await fetchProfile();
-  return result.status === 'ok' ? result.profile : null;
-}
