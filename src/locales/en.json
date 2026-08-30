@@ -548,7 +548,18 @@
       "examReadyDesc": "You're ready to take the final exam. Start here when you're prepared.",
       "certObtainedEyebrow": "Certificate",
       "certObtainedTitle": "Certificate obtained",
-      "viewCertificate": "View certificate"
+      "viewCertificate": "View certificate",
+      "notesTab": "Notes",
+      "filesTab": "Files",
+      "notePlaceholder": "Add your study notes here...",
+      "saveNote": "Save note",
+      "savedNotes": "Saved notes ({count})",
+      "noteEmpty": "No notes for this lesson yet",
+      "noteVideoTag": "Video note",
+      "noteDelete": "Delete",
+      "noteDeleteConfirm": "Delete this note?",
+      "noteDeleteCancel": "Cancel",
+      "noteDeleteOk": "Delete"
     },
     "auth": {
       "login": "Log in",

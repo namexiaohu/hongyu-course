@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 
 import Link from 'next/link';
 
+import { LessonNotesPanel } from '@/components/academy/lesson-notes-panel';
 import { useAuth } from '@/components/providers/auth-provider';
 import { useAuthModal } from '@/components/providers/auth-modal-provider';
 import { getCourseLessonProgress, markCourseLessonCompleted } from '@/lib/academy-progress-api';
@@ -46,7 +47,6 @@ export function CourseLearningView({ course }: Props) {
   const [playing, setPlaying] = useState(false);
   const [videoStarted, setVideoStarted] = useState(false);
   const [rightTab, setRightTab] = useState<'notes' | 'files'>('notes');
-  const [noteDraft, setNoteDraft] = useState('');
   const [completedIds, setCompletedIds] = useState<Set<string>>(() => new Set());
   const [certificateNumber, setCertificateNumber] = useState<string | null>(null);
   const [expandedUnits, setExpandedUnits] = useState<Record<string, boolean>>(() => {
@@ -105,7 +105,6 @@ export function CourseLearningView({ course }: Props) {
   useEffect(() => {
     setPlaying(false);
     setVideoStarted(false);
-    setNoteDraft('');
     setRightTab('notes');
     if (videoRef.current) {
       videoRef.current.pause();
@@ -212,15 +211,17 @@ export function CourseLearningView({ course }: Props) {
           <Link href={`/courses/${course.slug}`} className="sidebar-left-title" title={course.title}>
             {course.title}
           </Link>
-          <div className="learn-exam-badge" aria-label={t('academy.learn.examBadge')}>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
-              <polyline points="14 2 14 8 20 8" />
-              <line x1="16" y1="13" x2="8" y2="13" />
-              <line x1="16" y1="17" x2="8" y2="17" />
-            </svg>
-            <span>{t('academy.learn.examBadge')}</span>
-          </div>
+          {!certificateNumber ? (
+            <div className="learn-exam-badge" aria-label={t('academy.learn.examBadge')}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                <polyline points="14 2 14 8 20 8" />
+                <line x1="16" y1="13" x2="8" y2="13" />
+                <line x1="16" y1="17" x2="8" y2="17" />
+              </svg>
+              <span>{t('academy.learn.examBadge')}</span>
+            </div>
+          ) : null}
         </div>
 
         <nav className="units-nav">
@@ -414,35 +415,23 @@ export function CourseLearningView({ course }: Props) {
             className={`right-tab${rightTab === 'notes' ? ' is-active' : ''}`}
             onClick={() => setRightTab('notes')}
           >
-            Notes
+            {t('academy.learn.notesTab')}
           </button>
           <button
             type="button"
             className={`right-tab${rightTab === 'files' ? ' is-active' : ''}`}
             onClick={() => setRightTab('files')}
           >
-            Files
+            {t('academy.learn.filesTab')}
           </button>
         </div>
 
         {rightTab === 'notes' ? (
-          <div className="right-tab-content">
-            <textarea
-              className="note-input"
-              placeholder="Add your study notes here..."
-              value={noteDraft}
-              onChange={(event) => setNoteDraft(event.target.value)}
-            />
-            <button
-              type="button"
-              className="note-save-btn"
-              onClick={() => {
-                // UI only — API later
-              }}
-            >
-              Save note
-            </button>
-          </div>
+          <LessonNotesPanel
+            lessonId={active.lesson.id}
+            enabled={isAuthenticated}
+            videoRef={videoRef}
+          />
         ) : (
           <div className="right-tab-content">
             {materials.length ? (
