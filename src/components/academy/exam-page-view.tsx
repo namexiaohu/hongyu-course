@@ -7,11 +7,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from '@/components/providers/auth-provider';
 import { useAuthModal } from '@/components/providers/auth-modal-provider';
 import { PageLoading } from '@/components/ui/page-loading';
+import { academyLearnPath } from '@/lib/academy-certificate-course';
 import type { ExamQuestionPublic, ExamStartResponse, ExamUserAnswer } from '@/lib/storefront-academy-exams-api';
 import { startExam, submitExam } from '@/lib/storefront-academy-exams-api';
 import { useTranslation } from '@/lib/i18n-context';
 
-type Props = { slug: string };
+type Props = { slug: string; certificateCourseId?: string };
 
 function isAnswered(type: ExamQuestionPublic['questionType'], value: ExamUserAnswer | undefined) {
   if (value === undefined || value === null) return false;
@@ -26,11 +27,12 @@ function formatTimer(seconds: number) {
   return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
 }
 
-export function ExamPageView({ slug }: Props) {
+export function ExamPageView({ slug, certificateCourseId }: Props) {
   const { t } = useTranslation();
   const router = useRouter();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const { openAuthModal } = useAuthModal();
+  const learnHref = certificateCourseId ? academyLearnPath(slug, certificateCourseId) : `/courses/${slug}/learn`;
 
   const [session, setSession] = useState<ExamStartResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -207,7 +209,7 @@ export function ExamPageView({ slug }: Props) {
   }
 
   function confirmLeave() {
-    const href = pendingLeaveHref ?? `/courses/${slug}/learn`;
+    const href = pendingLeaveHref ?? learnHref;
     setLeaveConfirmOpen(false);
     setPendingLeaveHref(null);
     allowLeaveRef.current = true;
@@ -272,7 +274,12 @@ export function ExamPageView({ slug }: Props) {
       await submitExam(session.attemptId, payload);
       allowLeaveRef.current = true;
       setLeaveAllowed(true);
-      router.push(`/courses/${slug}/exam/result?attemptId=${encodeURIComponent(session.attemptId)}&source=submit`);
+      const resultQuery = new URLSearchParams({
+        attemptId: session.attemptId,
+        source: 'submit',
+      });
+      if (certificateCourseId) resultQuery.set('certificateCourseId', certificateCourseId);
+      router.push(`/courses/${slug}/exam/result?${resultQuery.toString()}`);
     } catch (error) {
       const msg = error instanceof Error ? error.message : '';
       if (msg.includes('TIME_EXPIRED')) {
@@ -414,7 +421,7 @@ export function ExamPageView({ slug }: Props) {
     return (
       <div className="exam-gate">
         <p>{message}</p>
-        <Link href={`/courses/${slug}/learn`} className="btn-secondary" style={{ marginTop: 16, display: 'inline-flex' }}>
+        <Link href={learnHref} className="btn-secondary" style={{ marginTop: 16, display: 'inline-flex' }}>
           {t('academy.result.backToLearn')}
         </Link>
       </div>
@@ -426,12 +433,12 @@ export function ExamPageView({ slug }: Props) {
       <div className="exam-topbar" aria-hidden={timedOut}>
         <div className="exam-topbar-left">
           <Link
-            href={`/courses/${slug}/learn`}
+            href={learnHref}
             className="exam-topbar-brand"
             onClick={(event) => {
               if (!shouldGuardLeave) return;
               event.preventDefault();
-              requestLeave(`/courses/${slug}/learn`);
+              requestLeave(learnHref);
             }}
           >
             HONGYU<span> Academy</span>
@@ -559,7 +566,7 @@ export function ExamPageView({ slug }: Props) {
             </div>
             <h2 id="exam-timeout-title">{t('academy.exam.timeUp')}</h2>
             <p>{t('academy.exam.timeUpBody')}</p>
-            <Link href={`/courses/${slug}/learn`} className="btn-primary exam-timeout-card__cta">
+            <Link href={learnHref} className="btn-primary exam-timeout-card__cta">
               {t('academy.result.backToLearn')}
             </Link>
           </div>

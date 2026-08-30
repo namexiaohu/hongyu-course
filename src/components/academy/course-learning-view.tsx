@@ -7,6 +7,8 @@ import Link from 'next/link';
 import { LessonNotesPanel } from '@/components/academy/lesson-notes-panel';
 import { useAuth } from '@/components/providers/auth-provider';
 import { useAuthModal } from '@/components/providers/auth-modal-provider';
+import { academyCourseDetailPath, academyExamPath } from '@/lib/academy-certificate-course';
+import { getCourseWatchProgress, touchCourseProgress } from '@/lib/academy-home-api';
 import { getCourseLessonProgress, markCourseLessonCompleted } from '@/lib/academy-progress-api';
 import type {
   StorefrontAcademyCourseDetail,
@@ -18,6 +20,7 @@ import { useTranslation } from '@/lib/i18n-context';
 
 type Props = {
   course: StorefrontAcademyCourseDetail;
+  certificateCourseId: string;
 };
 
 function flattenLessons(units: StorefrontAcademyUnitItem[]) {
@@ -37,10 +40,12 @@ function formatFileSize(bytes: number | null | undefined, fallback = '') {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-export function CourseLearningView({ course }: Props) {
+export function CourseLearningView({ course, certificateCourseId }: Props) {
   const { t } = useTranslation();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const { openAuthModal } = useAuthModal();
+  const courseHref = academyCourseDetailPath(course.slug, certificateCourseId);
+  const examHref = academyExamPath(course.slug, certificateCourseId);
   const units = course.units ?? [];
   const flat = useMemo(() => flattenLessons(units), [units]);
   const [activeLessonId, setActiveLessonId] = useState(flat[0]?.lesson.id ?? '');
@@ -55,8 +60,17 @@ export function CourseLearningView({ course }: Props) {
     return initial;
   });
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const seekToRef = useRef<number | null>(null);
+  const activeRef = useRef(flat[0]);
+  const authenticatedRef = useRef(isAuthenticated);
+  const videoStartedRef = useRef(false);
+  const restorePendingRef = useRef(false);
+  const activeLessonIdRef = useRef(activeLessonId);
 
   const active = flat.find((item) => item.lesson.id === activeLessonId) ?? flat[0];
+  activeRef.current = active;
+  authenticatedRef.current = isAuthenticated;
+  activeLessonIdRef.current = activeLessonId;
   const accessBlocked = authLoading || !isAuthenticated;
   const allLessonIds = useMemo(() => flat.map((item) => item.lesson.id), [flat]);
   const isCourseComplete = useMemo(
@@ -103,9 +117,86 @@ export function CourseLearningView({ course }: Props) {
   }, [course.slug, isAuthenticated]);
 
   useEffect(() => {
+    if (!isAuthenticated) return;
+    void touchCourseProgress(certificateCourseId).catch(() => undefined);
+  }, [certificateCourseId, isAuthenticated]);
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    let cancelled = false;
+    void getCourseWatchProgress(certificateCourseId)
+      .then((payload) => {
+        if (cancelled) return;
+        const watch = payload.watch;
+        if (!watch?.lessonId || !watch.unitId) return;
+        const exists = flat.some((item) => item.lesson.id === watch.lessonId && item.unit.id === watch.unitId);
+        if (!exists) return;
+        seekToRef.current = watch.positionSeconds;
+        if (watch.lessonId === activeLessonIdRef.current) {
+          applySeek();
+          return;
+        }
+        restorePendingRef.current = true;
+        setActiveLessonId(watch.lessonId);
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [certificateCourseId, isAuthenticated, flat]);
+
+  function saveWatchPosition() {
+    const current = activeRef.current;
+    if (!authenticatedRef.current || !current || !videoStartedRef.current) return;
+    const seconds = Math.max(0, Math.floor(videoRef.current?.currentTime ?? 0));
+    void touchCourseProgress(certificateCourseId, {
+      unitId: current.unit.id,
+      lessonId: current.lesson.id,
+      positionSeconds: seconds,
+    }).catch(() => undefined);
+  }
+
+  function applySeek() {
+    const video = videoRef.current;
+    const seek = seekToRef.current;
+    if (!video || seek == null) return;
+    const duration = video.duration;
+    if (!Number.isFinite(duration) || duration <= 0) return;
+    seekToRef.current = null;
+    video.currentTime = Math.min(Math.max(0, seek), Math.max(0, duration - 0.05));
+  }
+
+  useEffect(() => {
+    if (!playing || !isAuthenticated) return;
+    const timer = window.setInterval(saveWatchPosition, 10_000);
+    return () => {
+      window.clearInterval(timer);
+      saveWatchPosition();
+    };
+  }, [playing, isAuthenticated, certificateCourseId]);
+
+  useEffect(() => {
+    function onVisibility() {
+      if (document.visibilityState === 'hidden') saveWatchPosition();
+    }
+    document.addEventListener('visibilitychange', onVisibility);
+    window.addEventListener('pagehide', saveWatchPosition);
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibility);
+      window.removeEventListener('pagehide', saveWatchPosition);
+    };
+  }, [certificateCourseId]);
+
+  useEffect(() => {
     setPlaying(false);
     setVideoStarted(false);
+    videoStartedRef.current = false;
     setRightTab('notes');
+    if (restorePendingRef.current) {
+      restorePendingRef.current = false;
+      requestAnimationFrame(() => applySeek());
+      return;
+    }
     if (videoRef.current) {
       videoRef.current.pause();
       videoRef.current.currentTime = 0;
@@ -127,7 +218,12 @@ export function CourseLearningView({ course }: Props) {
   }, [active]);
 
   function selectLesson(lessonId: string) {
+    seekToRef.current = null;
     setActiveLessonId(lessonId);
+  }
+
+  function handleLoadedMetadata() {
+    applySeek();
   }
 
   function markCompleted(lessonId: string) {
@@ -150,6 +246,7 @@ export function CourseLearningView({ course }: Props) {
     const video = videoRef.current;
     if (!video) return;
     void video.play().then(() => {
+      videoStartedRef.current = true;
       setVideoStarted(true);
       setPlaying(true);
     }).catch(() => setPlaying(false));
@@ -165,7 +262,7 @@ export function CourseLearningView({ course }: Props) {
       <div className="container" style={{ padding: '48px 24px' }}>
         <h1>{course.title}</h1>
         <p>No lessons available yet.</p>
-        <Link href={`/courses/${course.slug}`} className="btn-secondary">Back to course</Link>
+        <Link href={courseHref} className="btn-secondary">Back to course</Link>
       </div>
     );
   }
@@ -208,20 +305,9 @@ export function CourseLearningView({ course }: Props) {
             </svg>
             <span>HONGYU Academy</span>
           </div>
-          <Link href={`/courses/${course.slug}`} className="sidebar-left-title" title={course.title}>
+          <Link href={courseHref} className="sidebar-left-title" title={course.title}>
             {course.title}
           </Link>
-          {!certificateNumber ? (
-            <div className="learn-exam-badge" aria-label={t('academy.learn.examBadge')}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-                <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
-                <polyline points="14 2 14 8 20 8" />
-                <line x1="16" y1="13" x2="8" y2="13" />
-                <line x1="16" y1="17" x2="8" y2="17" />
-              </svg>
-              <span>{t('academy.learn.examBadge')}</span>
-            </div>
-          ) : null}
         </div>
 
         <nav className="units-nav">
@@ -323,7 +409,7 @@ export function CourseLearningView({ course }: Props) {
                   <p className="learn-exam-compact__title">{t('academy.learn.examReadyTitle')}</p>
                 </div>
               </div>
-              <Link href={`/courses/${course.slug}/exam`} className="learn-exam-compact__cta" target="_blank" rel="noopener noreferrer">
+              <Link href={examHref} className="learn-exam-compact__cta" target="_blank" rel="noopener noreferrer">
                 {t('academy.learn.enterExam')}
               </Link>
             </div>
@@ -369,13 +455,16 @@ export function CourseLearningView({ course }: Props) {
         <div className={`video-player${playing ? ' is-playing' : ''}`}>
           {active.lesson.videoUrl ? (
             <video
+              key={active.lesson.id}
               ref={videoRef}
               className="video-player__media"
               src={active.lesson.videoUrl}
               controls={videoStarted}
               playsInline
               preload="metadata"
+              onLoadedMetadata={handleLoadedMetadata}
               onPlay={() => {
+                videoStartedRef.current = true;
                 setVideoStarted(true);
                 setPlaying(true);
               }}

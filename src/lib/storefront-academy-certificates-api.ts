@@ -4,14 +4,18 @@ export type StorefrontAcademyCertificateListItem = {
   slug: string;
   href: string;
   title: string;
+  subtitle: string;
+  badgeLabel: string;
   summary: string;
   coverImage: string;
   teacherCount: number;
   studentCount: number;
   courseCount: number;
+  skills?: string[];
 };
 
 export type StorefrontAcademyCertificateCourseItem = {
+  certificateCourseId: string;
   slug: string;
   href: string;
   title: string;
@@ -54,10 +58,12 @@ export async function getStorefrontAcademyCertificateList(input?: {
   locale?: string;
   page?: number;
   pageSize?: number;
+  q?: string;
 }) {
   const params = new URLSearchParams();
   if (input?.page) params.set('page', String(input.page));
   if (input?.pageSize) params.set('pageSize', String(input.pageSize));
+  if (input?.q?.trim()) params.set('q', input.q.trim());
   const query = params.toString();
   return serverFetch<StorefrontAcademyCertificateListResponse>(
     `/api/front/academy/certificates${query ? `?${query}` : ''}`,

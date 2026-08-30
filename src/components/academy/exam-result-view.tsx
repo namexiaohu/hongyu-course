@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { PageLoading } from '@/components/ui/page-loading';
 import { useAuth } from '@/components/providers/auth-provider';
 import { useAuthModal } from '@/components/providers/auth-modal-provider';
+import { academyCourseDetailPath, academyExamPath, academyLearnPath } from '@/lib/academy-certificate-course';
 import type { ExamResultResponse } from '@/lib/storefront-academy-exams-api';
 import { getExamResult } from '@/lib/storefront-academy-exams-api';
 import { useTranslation } from '@/lib/i18n-context';
@@ -14,6 +15,7 @@ type Props = {
   slug: string;
   attemptId: string;
   source: 'submit' | 'review';
+  certificateCourseId?: string;
 };
 
 type Filter = 'all' | 'correct' | 'wrong';
@@ -140,10 +142,13 @@ function formatDuration(seconds: number) {
   return `${m}:${String(s).padStart(2, '0')}`;
 }
 
-export function ExamResultView({ slug, attemptId, source }: Props) {
+export function ExamResultView({ slug, attemptId, source, certificateCourseId }: Props) {
   const { t } = useTranslation();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const { openAuthModal } = useAuthModal();
+  const learnHref = certificateCourseId ? academyLearnPath(slug, certificateCourseId) : `/courses/${slug}/learn`;
+  const courseHref = certificateCourseId ? academyCourseDetailPath(slug, certificateCourseId) : `/courses/${slug}`;
+  const examHref = certificateCourseId ? academyExamPath(slug, certificateCourseId) : `/courses/${slug}/exam`;
   const [result, setResult] = useState<ExamResultResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
@@ -352,12 +357,12 @@ export function ExamResultView({ slug, attemptId, source }: Props) {
           </a>
         ) : null}
         {!passed && result.canRetake ? (
-          <Link href={`/courses/${slug}/exam`} className="btn-primary" target="_blank" rel="noopener noreferrer">
+          <Link href={examHref} className="btn-primary" target="_blank" rel="noopener noreferrer">
             {t('academy.result.retry')}
           </Link>
         ) : null}
-        <Link href={`/courses/${slug}/learn`} className="btn-secondary">{t('academy.result.backToLearn')}</Link>
-        <Link href={`/courses/${slug}`} className="btn-secondary">{t('academy.result.backToCourse')}</Link>
+        <Link href={learnHref} className="btn-secondary">{t('academy.result.backToLearn')}</Link>
+        <Link href={courseHref} className="btn-secondary">{t('academy.result.backToCourse')}</Link>
       </div>
     </div>
   );

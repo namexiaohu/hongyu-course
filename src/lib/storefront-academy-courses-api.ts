@@ -46,6 +46,13 @@ export type StorefrontAcademyCourseDetail = {
   tools: string[];
   units: StorefrontAcademyUnitItem[];
   certificates: Array<{ slug: string; href: string; title: string }>;
+  certificateLinks: Array<{
+    certificateCourseId: string;
+    certificateSlug: string;
+    certificateTitle: string;
+    href: string;
+    sortOrder: number;
+  }>;
   seo: { title: string; description: string };
 };
 

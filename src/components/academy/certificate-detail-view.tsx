@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import Link from 'next/link';
 
@@ -8,11 +8,32 @@ import { AcademyHeroVisual } from '@/components/academy/academy-hero-visual';
 import { CertificateHeroDecoration } from '@/components/academy/hero-decorations';
 import { useAuth } from '@/components/providers/auth-provider';
 import { useAuthModal } from '@/components/providers/auth-modal-provider';
+import { recordCertificateView } from '@/lib/academy-home-api';
 import { buildAcademyHeroSlides } from '@/lib/academy-hero-media';
 import type { StorefrontAcademyCertificateDetail } from '@/lib/storefront-academy-certificates-api';
 import { useTranslation } from '@/lib/i18n-context';
 
 type Props = { certificate: StorefrontAcademyCertificateDetail };
+
+function CoursesIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+      <path d="M4 19.5A2.5 2.5 0 016.5 17H20" />
+      <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z" />
+    </svg>
+  );
+}
+
+function LearnersIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+      <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+      <circle cx="9" cy="7" r="4" />
+      <path d="M23 21v-2a4 4 0 00-3-3.87" />
+      <path d="M16 3.13a4 4 0 010 7.75" />
+    </svg>
+  );
+}
 
 export function CertificateDetailView({ certificate }: Props) {
   const { t } = useTranslation();
@@ -20,7 +41,8 @@ export function CertificateDetailView({ certificate }: Props) {
   const { openAuthModal } = useAuthModal();
   const [tab, setTab] = useState<'about' | 'courses'>('about');
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
-  const firstCourse = certificate.courses[0];
+  const courses = useMemo(() => certificate.courses ?? [], [certificate.courses]);
+  const firstCourse = courses[0];
   const slides = buildAcademyHeroSlides({
     title: certificate.title,
     coverImage: certificate.coverImage,
@@ -30,7 +52,10 @@ export function CertificateDetailView({ certificate }: Props) {
     coverDisplay: certificate.coverDisplay,
   });
 
-  const courses = useMemo(() => certificate.courses ?? [], [certificate.courses]);
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    void recordCertificateView(certificate.slug).catch(() => undefined);
+  }, [certificate.slug, isAuthenticated]);
 
   function toggleCourse(slug: string) {
     setExpanded((current) => ({ ...current, [slug]: !current[slug] }));
@@ -43,29 +68,28 @@ export function CertificateDetailView({ certificate }: Props) {
           <div>
             <h1>{certificate.title}</h1>
             <p className="hero__lead">{certificate.summary}</p>
-            <p className="cert-card__meta">{certificate.studentCount.toLocaleString()} {t('academy.home.enrolled')}</p>
+            <p className="cert-card__meta cert-card__meta--icons">
+              <span className="cert-card__meta-item">
+                <LearnersIcon />
+                {certificate.studentCount.toLocaleString()} {t('academy.home.enrolled')}
+              </span>
+            </p>
             <div className="hero__actions">
-              {isAuthenticated ? (
-                firstCourse ? (
-                  <a
-                    href={`/courses/${firstCourse.slug}`}
-                    className="btn-primary"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    {t('academy.auth.startCourse')}
-                  </a>
-                ) : null
-              ) : (
-                <>
-                  <button type="button" className="btn-primary" onClick={() => openAuthModal('register')}>
-                    {t('academy.auth.enroll')}
-                  </button>
-                  <button type="button" className="btn-secondary" onClick={() => openAuthModal('login')}>
-                    {t('academy.nav.login')}
-                  </button>
-                </>
-              )}
+              {firstCourse ? (
+                <a
+                  href={firstCourse.href}
+                  className="btn-primary"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {t('academy.auth.startCourse')}
+                </a>
+              ) : null}
+              {!isAuthenticated ? (
+                <button type="button" className="btn-secondary" onClick={() => openAuthModal('login')}>
+                  {t('academy.nav.login')}
+                </button>
+              ) : null}
             </div>
           </div>
           <AcademyHeroVisual slides={slides} fallback={<CertificateHeroDecoration />} />
@@ -109,7 +133,7 @@ export function CertificateDetailView({ certificate }: Props) {
                     const isOpen = Boolean(expanded[course.slug]);
                     return (
                       <div key={course.slug} className={`course-item${isOpen ? ' is-expanded' : ''}`}>
-                        <button type="button" className="course-item__header" onClick={() => toggleCourse(course.slug)}>
+                        <div className="course-item__header">
                           {course.coverImage ? (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img src={course.coverImage} alt="" className="course-item__thumb" />
@@ -117,27 +141,44 @@ export function CertificateDetailView({ certificate }: Props) {
                             <div className="course-item__thumb" />
                           )}
                           <div className="course-item__info">
-                            <div className="course-item__title">{index + 1}. {course.title}</div>
-                            <div className="course-item__meta">{course.units.length} units</div>
+                            <Link
+                              href={course.href}
+                              className="course-item__title"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              {course.title}
+                            </Link>
+                            <div className="course-item__meta">
+                              {t('academy.certificate.courseRowMeta', {
+                                index: index + 1,
+                                count: course.units.length,
+                              })}
+                            </div>
                           </div>
-                          <svg className="course-item__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <polyline points="6 9 12 15 18 9" />
-                          </svg>
-                        </button>
+                          <button
+                            type="button"
+                            className="course-item__toggle"
+                            onClick={() => toggleCourse(course.slug)}
+                            aria-expanded={isOpen}
+                          >
+                            <svg className="course-item__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                              <polyline points="6 9 12 15 18 9" />
+                            </svg>
+                          </button>
+                        </div>
                         {isOpen ? (
                           <div className="course-item__body">
                             <p>{course.summary}</p>
                             <div className="module-list">
                               {course.units.map((unit, unitIndex) => (
                                 <div key={unit.id} className="module-row">
+                                  <CoursesIcon />
                                   <span>{unitIndex + 1}. {unit.title}</span>
                                 </div>
                               ))}
                               {!course.units.length ? <p className="cert-card__meta">No units yet</p> : null}
                             </div>
-                            <Link href={`/courses/${course.slug}`} className="btn-secondary" style={{ marginTop: 12, display: 'inline-flex' }}>
-                              View course
-                            </Link>
                           </div>
                         ) : null}
                       </div>
@@ -160,11 +201,16 @@ export function CertificateDetailView({ certificate }: Props) {
                 <div className="instructor-org">{t('academy.certificate.academyName')}</div>
               </div>
             </div>
-            <p className="instructor-stats">
-              {t('academy.certificate.instructorStats', {
-                courses: certificate.courses.length,
-                students: certificate.studentCount.toLocaleString(),
-              })}
+            <p className="instructor-stats instructor-stats--icons">
+              <span className="cert-card__meta-item">
+                <CoursesIcon />
+                {t('academy.certificate.instructorCourses', { count: certificate.courses.length })}
+              </span>
+              <span className="cert-card__meta-dot" aria-hidden>·</span>
+              <span className="cert-card__meta-item">
+                <LearnersIcon />
+                {t('academy.certificate.instructorStudents', { count: certificate.studentCount.toLocaleString() })}
+              </span>
             </p>
             <hr className="sidebar-divider" />
             <h3 className="sidebar-card__title">{t('academy.certificate.provider')}</h3>

@@ -505,11 +505,27 @@
     },
     "home": {
       "welcome": "Welcome back",
+      "welcomeGuest": "Welcome to HONGYU Academy",
+      "welcomeBackTo": "welcome back to",
+      "welcomeEmpty": "Explore a certificate to start learning.",
+      "browseCertificates": "Browse certificates",
+      "courseProgress": "Course {index}/{total}: {title}",
+      "completedCount": "{percent}%",
       "continueLearning": "Continue learning",
+      "recentCertificates": "Recently viewed certificates",
+      "recentCourses": "Recently viewed courses",
       "popularCertificates": "Popular certificates",
       "startNow": "Start now",
+      "continueWatching": "Continue watching",
       "viewCertificate": "View certificate",
-      "enrolled": "learners enrolled"
+      "enrolled": "learners enrolled",
+      "professionalCertificate": "Professional Certificate",
+      "chooseCertificate": "Choose a certificate",
+      "chooseCertificateLead": "This course belongs to more than one certificate. Select one to continue.",
+      "chooseCertificateEmpty": "This course is not currently part of a published certificate.",
+      "videoMeta": "Video · {watched}/{duration}s",
+      "courseType": "Course",
+      "loading": "Loading your learning…"
     },
     "certificate": {
       "about": "About",
@@ -523,15 +539,28 @@
       "instructorTeam": "HONGYU Clinical Faculty Team",
       "academyName": "HONGYU Academy",
       "instructorStats": "{courses} courses · {students} students",
+      "instructorCourses": "{count} courses",
+      "instructorStudents": "{count} students",
+      "courseRowMeta": "Course {index} · {count} units",
       "provider": "Provider"
+    },
+    "catalog": {
+      "allTitle": "All certificates",
+      "allCount": "{count} certificates",
+      "resultsTitle": "Results for {query}",
+      "resultsCount": "{count} certificates matching “{query}”"
     },
     "course": {
       "about": "About",
       "units": "Units",
       "startCourse": "Start course",
+      "continueCourse": "Continue",
       "modules": "Course modules",
       "partOf": "Part of",
-      "instructorStats": "{units} units · {students} students"
+      "partOfSentence": "This course is part of {name}",
+      "instructorStats": "{units} units · {students} students",
+      "instructorUnits": "{count} units",
+      "unitRowMeta": "Unit {index} · {count} lessons"
     },
     "learn": {
       "checkingAuth": "Checking sign-in status…",
@@ -539,7 +568,6 @@
       "loginRequiredBody": "You need an account to watch lessons, take notes, and track progress on this course.",
       "examLocked": "Complete all lessons to unlock",
       "enterExam": "Start final exam",
-      "examBadge": "Includes final exam",
       "examGoalEyebrow": "Course completion",
       "examGoalTitle": "Final exam required",
       "examGoalDesc": "This course ends with a certification exam. Finish every lesson below to unlock it.",

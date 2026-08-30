@@ -1,14 +1,14 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { FormEvent, Suspense, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import { LanguageSwitcher } from '@/components/layout/language-switcher';
 import { useAuth } from '@/components/providers/auth-provider';
 import { useAuthModal } from '@/components/providers/auth-modal-provider';
 import { useTranslation } from '@/lib/i18n-context';
-import { SITE_BRAND } from '@/lib/site-config';
+import { SITE_BRAND, HOME_SITE_URL } from '@/lib/site-config';
 import type { StorefrontLanguage } from '@/lib/storefront-languages';
 import { getUserInitial } from '@/lib/user-initial';
 
@@ -17,6 +17,38 @@ type Props = {
   languages: StorefrontLanguage[];
   locale: string;
 };
+
+function HeaderSearch() {
+  const pathname = usePathname();
+  const params = useSearchParams();
+  const router = useRouter();
+  const { t } = useTranslation();
+  const fromUrl = pathname === '/search' ? (params.get('q') ?? '') : '';
+  const [q, setQ] = useState(fromUrl);
+
+  useEffect(() => {
+    setQ(pathname === '/search' ? (params.get('q') ?? '') : '');
+  }, [pathname, params]);
+
+  function onSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const trimmed = q.trim();
+    router.push(trimmed ? `/search?q=${encodeURIComponent(trimmed)}` : '/certificates');
+  }
+
+  return (
+    <form className="course-nav__search" onSubmit={onSubmit} role="search">
+      <input
+        type="search"
+        name="q"
+        value={q}
+        onChange={(event) => setQ(event.target.value)}
+        placeholder={t('academy.nav.searchPlaceholder')}
+        aria-label={t('academy.nav.searchPlaceholder')}
+      />
+    </form>
+  );
+}
 
 export function CourseFrame({ children, languages, locale }: Props) {
   const pathname = usePathname();
@@ -53,14 +85,13 @@ export function CourseFrame({ children, languages, locale }: Props) {
             <Link href="/" className="course-nav__brand">{SITE_BRAND}</Link>
             {!isLearning ? (
               <nav className="course-nav__links">
-                <Link href="/">{t('academy.nav.explore')}</Link>
-                <Link href="/courses/small-animal-internal-medicine/learn">{t('academy.nav.myLearning')}</Link>
+                <Link href="/certificates">{t('academy.nav.explore')}</Link>
               </nav>
             ) : null}
-            {!isExam ? (
-              <div className="course-nav__search">
-                <input type="search" placeholder={t('academy.nav.searchPlaceholder')} aria-label={t('academy.nav.searchPlaceholder')} />
-              </div>
+            {!isLearning ? (
+              <Suspense fallback={null}>
+                <HeaderSearch />
+              </Suspense>
             ) : null}
           </div>
           <div className="course-nav__actions">
@@ -112,10 +143,7 @@ export function CourseFrame({ children, languages, locale }: Props) {
           <div className="course-footer__inner">
             <p>© {new Date().getFullYear()} {SITE_BRAND}</p>
             <div className="course-footer__links">
-              <Link href="/">{t('academy.footer.certificates')}</Link>
-              <button type="button" className="course-nav__auth" onClick={() => openAuthModal('login')}>
-                {t('academy.footer.help')}
-              </button>
+              <a href={HOME_SITE_URL} className="course-nav__auth">{t('academy.footer.help')}</a>
             </div>
           </div>
         </footer>
