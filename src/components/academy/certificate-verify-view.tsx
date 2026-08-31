@@ -29,6 +29,7 @@ export function CertificateVerifyView({ certificateNumber }: Props) {
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [downloading, setDownloading] = useState(false);
+  const [downloadError, setDownloadError] = useState<string | null>(null);
   const frameRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -44,10 +45,13 @@ export function CertificateVerifyView({ certificateNumber }: Props) {
   }, [certificateNumber]);
 
   async function handleDownload() {
-    if (!frameRef.current || !cert) return;
+    if (!frameRef.current || !cert || downloading) return;
+    setDownloadError(null);
     setDownloading(true);
     try {
       await downloadElementAsPdf(frameRef.current, `${cert.certificateNumber}.pdf`);
+    } catch {
+      setDownloadError(t('academy.verify.downloadFailed'));
     } finally {
       setDownloading(false);
     }
@@ -125,11 +129,36 @@ export function CertificateVerifyView({ certificateNumber }: Props) {
       </div>
 
       <div className="certificate-actions">
-        <button type="button" className="btn-primary" disabled={downloading} onClick={() => void handleDownload()}>
-          {t('academy.verify.download')}
+        <button
+          type="button"
+          className={`btn-primary${downloading ? ' is-loading' : ''}`}
+          disabled={downloading}
+          aria-busy={downloading}
+          onClick={() => void handleDownload()}
+        >
+          {downloading ? (
+            <>
+              <span className="certificate-download-spinner" aria-hidden="true" />
+              {t('academy.verify.downloading')}
+            </>
+          ) : (
+            t('academy.verify.download')
+          )}
         </button>
         <Link href="/" className="btn-secondary">{t('academy.verify.backHome')}</Link>
+        {downloadError ? (
+          <p className="certificate-download-error" role="alert">{downloadError}</p>
+        ) : null}
       </div>
+
+      {downloading ? (
+        <div className="certificate-download-overlay" role="status" aria-live="polite">
+          <div className="certificate-download-overlay__card">
+            <span className="certificate-download-spinner certificate-download-spinner--lg" aria-hidden="true" />
+            <p>{t('academy.verify.downloading')}</p>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

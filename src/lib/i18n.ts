@@ -4,7 +4,6 @@ export type UnitSystem = 'imperial' | 'metric';
 
 export const DEFAULT_LOCALE: Locale = 'zh';
 export const LOCALE_COOKIE_NAME = 'hongyu-locale';
-export const localeStorageKey = LOCALE_COOKIE_NAME;
 export const LOCALE_REQUEST_HEADER = 'x-vex-locale';
 
 export type SitePreferences = {

@@ -4,12 +4,16 @@ import { useEffect, useMemo, useState } from 'react';
 
 import Link from 'next/link';
 
+import { AcademyDetailSidebar } from '@/components/academy/academy-detail-sidebar';
 import { AcademyHeroVisual } from '@/components/academy/academy-hero-visual';
+import { CertNoticeBox } from '@/components/academy/cert-notice-box';
+import { CertProgressBlock } from '@/components/academy/cert-progress-block';
+import { HeroResume } from '@/components/academy/hero-resume';
 import { CoursesIcon, LearnersIcon } from '@/components/academy/academy-stat-icons';
 import { CertificateHeroDecoration } from '@/components/academy/hero-decorations';
+import { InlineLoading } from '@/components/ui/inline-loading';
 import { useAuth } from '@/components/providers/auth-provider';
 import { useAuthModal } from '@/components/providers/auth-modal-provider';
-import { useSiteBranding } from '@/components/providers/site-branding-provider';
 import { academyCertificateExamPath, academyLearnPath } from '@/lib/academy-certificate-course';
 import { recordCertificateView } from '@/lib/academy-home-api';
 import { buildAcademyHeroSlides } from '@/lib/academy-hero-media';
@@ -22,61 +26,8 @@ import { useTranslation } from '@/lib/i18n-context';
 
 type Props = { certificate: StorefrontAcademyCertificateDetail };
 
-function ProgressBar({
-  percent,
-  complete,
-}: {
-  percent: number;
-  complete: boolean;
-}) {
-  return (
-    <div className="cert-progress">
-      <div className="cert-progress__track">
-        <div
-          className={`cert-progress__fill${complete ? ' cert-progress__fill--complete' : ''}`}
-          style={{ width: `${Math.min(100, Math.max(0, percent))}%` }}
-        />
-      </div>
-    </div>
-  );
-}
-
-function NoticeBox({
-  variant,
-  title,
-  body,
-}: {
-  variant: 'warn' | 'success' | 'info';
-  title: string;
-  body: string;
-}) {
-  return (
-    <div className={`cert-notice cert-notice--${variant}`}>
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-        {variant === 'success' ? (
-          <>
-            <path d="M22 11.08V12a10 10 0 11-5.93-9.14" />
-            <polyline points="22 4 12 14.01 9 11.01" />
-          </>
-        ) : (
-          <>
-            <path d="M12 9v4" />
-            <path d="M12 17h.01" />
-            <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
-          </>
-        )}
-      </svg>
-      <div>
-        <strong>{title}</strong>
-        <p>{body}</p>
-      </div>
-    </div>
-  );
-}
-
 export function CertificateDetailView({ certificate }: Props) {
   const { t } = useTranslation();
-  const { companyName, positioning } = useSiteBranding();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const { openAuthModal } = useAuthModal();
   const [tab, setTab] = useState<'about' | 'courses'>('courses');
@@ -94,7 +45,7 @@ export function CertificateDetailView({ certificate }: Props) {
     coverDisplay: certificate.coverDisplay,
   });
 
-  const status = learning?.status ?? (isAuthenticated ? 'not_started' : 'not_started');
+  const status = learning?.status ?? 'not_started';
   const progress = learning?.progress;
   const exam = learning?.exam ?? (certificate.examHint.hasExam
     ? {
@@ -154,29 +105,20 @@ export function CertificateDetailView({ certificate }: Props) {
   const progressPercent = progress?.progressPercent ?? 0;
 
   const progressLoading = isAuthenticated && !learningReady;
-
-  function renderProgressLoading() {
-    return (
-      <div className="detail-inline-loading" role="status" aria-live="polite" aria-busy="true">
-        <span className="detail-inline-loading__spinner" aria-hidden="true" />
-        <span>{t('academy.home.loading')}</span>
-      </div>
-    );
-  }
+  const loadingLabel = t('academy.home.loading');
 
   function renderContinueResume() {
     const watch = learning?.continueWatch;
     if (!watch) return null;
     return (
-      <div className="hero__resume">
-        <p className="hero__resume-lesson">{watch.unitTitle} / {watch.lessonTitle}</p>
-        <p className="hero__resume-meta">
-          {t('academy.home.videoMeta', {
-            watched: watch.positionSeconds,
-            duration: watch.durationSeconds,
-          })}
-        </p>
-      </div>
+      <HeroResume
+        unitTitle={watch.unitTitle}
+        lessonTitle={watch.lessonTitle}
+        meta={t('academy.home.videoMeta', {
+          watched: watch.positionSeconds,
+          duration: watch.durationSeconds,
+        })}
+      />
     );
   }
 
@@ -259,16 +201,12 @@ export function CertificateDetailView({ certificate }: Props) {
 
     const complete = status === 'courses_complete' || status === 'exam_passed';
     return (
-      <div className="cert-progress-block">
-        <div className="cert-progress-block__head">
-          <span>{t('academy.certificate.learningProgress')}</span>
-          <span className={complete ? 'cert-progress-block__stat cert-progress-block__stat--complete' : 'cert-progress-block__stat'}>
-            {t('academy.certificate.progressPercentComplete', { percent: progressPercent })}
-            {complete ? ' ✓' : ''}
-          </span>
-        </div>
-        <ProgressBar percent={progressPercent} complete={complete} />
-      </div>
+      <CertProgressBlock
+        label={t('academy.certificate.learningProgress')}
+        stat={`${t('academy.certificate.progressPercentComplete', { percent: progressPercent })}${complete ? ' ✓' : ''}`}
+        percent={progressPercent}
+        complete={complete}
+      />
     );
   }
 
@@ -276,7 +214,7 @@ export function CertificateDetailView({ certificate }: Props) {
     if (progressLoading) return null;
     if (status === 'exam_passed' && learning?.examResult) {
       return (
-        <NoticeBox
+        <CertNoticeBox
           variant="success"
           title={t('academy.certificate.examPassedTitle')}
           body={t('academy.certificate.examPassedBody', {
@@ -290,7 +228,7 @@ export function CertificateDetailView({ certificate }: Props) {
 
     if (status === 'courses_complete' && exam.hasExam) {
       return (
-        <NoticeBox
+        <CertNoticeBox
           variant="success"
           title={t('academy.certificate.examReadyTitle')}
           body={t('academy.certificate.examReadyBody', {
@@ -304,7 +242,7 @@ export function CertificateDetailView({ certificate }: Props) {
 
     if (status === 'learning' && exam.hasExam && progressPercent < 100) {
       return (
-        <NoticeBox
+        <CertNoticeBox
           variant="warn"
           title={t('academy.certificate.learningInProgressTitle')}
           body={t('academy.certificate.learningInProgressBody')}
@@ -314,7 +252,7 @@ export function CertificateDetailView({ certificate }: Props) {
 
     if (status === 'not_started' && exam.hasExam) {
       return (
-        <NoticeBox
+        <CertNoticeBox
           variant="warn"
           title={t('academy.certificate.examRequiredTitle')}
           body={t('academy.certificate.examRequiredBody', {
@@ -337,7 +275,7 @@ export function CertificateDetailView({ certificate }: Props) {
             <h1>{certificate.title}</h1>
             <p className="hero__lead">{certificate.summary}</p>
                 {progressLoading ? (
-                  renderProgressLoading()
+                  <InlineLoading label={loadingLabel} className="inline-loading--detail" />
                 ) : (
               <>
                 {renderHeroActions()}
@@ -389,7 +327,7 @@ export function CertificateDetailView({ certificate }: Props) {
               <>
                 <h2>{t('academy.certificate.courseList')}</h2>
                 {progressLoading ? (
-                  renderProgressLoading()
+                  <InlineLoading label={loadingLabel} className="inline-loading--detail" />
                 ) : (
                 <div className="course-accordion">
                   {courseRows.map((course) => {
@@ -472,41 +410,12 @@ export function CertificateDetailView({ certificate }: Props) {
               </>
             )}
           </div>
-          <aside className="sidebar-card">
-            <h3 className="sidebar-card__title">
-              {t('academy.certificate.teachers', { count: certificate.teacherCount })}
-            </h3>
-            <div className="instructor-row">
-              <div className="instructor-avatar" aria-hidden="true">
-                <svg viewBox="0 0 24 24"><path d="M12 2L2 7v10l10 5 10-5V7L12 2z" /></svg>
-              </div>
-              <div>
-                {companyName ? <div className="instructor-name">{companyName}</div> : null}
-                {positioning ? <div className="instructor-org">{positioning}</div> : null}
-              </div>
-            </div>
-            <p className="instructor-stats instructor-stats--icons">
-              <span className="cert-card__meta-item">
-                <CoursesIcon />
-                {t('academy.certificate.instructorCourses', { count: certificate.courses.length })}
-              </span>
-              <span className="cert-card__meta-dot" aria-hidden>·</span>
-              <span className="cert-card__meta-item">
-                <LearnersIcon />
-                {t('academy.certificate.instructorStudents', { count: certificate.studentCount.toLocaleString() })}
-              </span>
-            </p>
-            <hr className="sidebar-divider" />
-            <h3 className="sidebar-card__title">{t('academy.certificate.provider')}</h3>
-            {companyName ? (
-              <div className="provider-row">
-                <div className="provider-logo" aria-hidden="true">
-                  <svg viewBox="0 0 24 24"><path d="M12 2L2 7v10l10 5 10-5V7L12 2z" /></svg>
-                </div>
-                <div className="provider-name">{companyName}</div>
-              </div>
-            ) : null}
-          </aside>
+          <AcademyDetailSidebar
+            teachersTitle={t('academy.certificate.teachers', { count: certificate.teacherCount })}
+            primaryStat={t('academy.certificate.instructorCourses', { count: certificate.courses.length })}
+            studentsStat={t('academy.certificate.instructorStudents', { count: certificate.studentCount.toLocaleString() })}
+            providerTitle={t('academy.certificate.provider')}
+          />
         </div>
       </div>
     </>

@@ -57,8 +57,8 @@ export function CourseFrame({ children, languages, locale, branding }: Props) {
   const { t } = useTranslation();
   const { user, isAuthenticated, logout } = useAuth();
   const { openAuthModal } = useAuthModal();
-  const isExam = pathname.includes('/exam');
-  const isLearning = pathname.includes('/learn') || isExam;
+  const isExamTaking = /\/exam\/?$/.test(pathname);
+  const isLearning = pathname.includes('/learn') || isExamTaking;
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 

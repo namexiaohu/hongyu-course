@@ -9,6 +9,7 @@ import { useAuthModal } from '@/components/providers/auth-modal-provider';
 import { useSiteBranding } from '@/components/providers/site-branding-provider';
 import { PageLoading } from '@/components/ui/page-loading';
 import { academyCertificateExamResultPath } from '@/lib/academy-certificate-course';
+import { ApiRequestError } from '@/lib/api-client';
 import type { ExamQuestionPublic, ExamStartResponse, ExamUserAnswer } from '@/lib/storefront-academy-exams-api';
 import { startCertificateExam, submitExam } from '@/lib/storefront-academy-exams-api';
 import { useTranslation } from '@/lib/i18n-context';
@@ -47,6 +48,7 @@ export function ExamPageView({ certificateSlug }: Props) {
   const [pendingLeaveHref, setPendingLeaveHref] = useState<string | null>(null);
   const [leaveAllowed, setLeaveAllowed] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [submitPhase, setSubmitPhase] = useState<'submitting' | 'grading'>('submitting');
   const [secondsLeft, setSecondsLeft] = useState<number | null>(null);
   const [answerRequiredHint, setAnswerRequiredHint] = useState(false);
   const [timedOut, setTimedOut] = useState(false);
@@ -267,17 +269,25 @@ export function ExamPageView({ certificateSlug }: Props) {
     if (!session || submitting || timedOut) return;
     if (!auto) {
       if (focusFirstUnanswered()) return;
-      setConfirmOpen(false);
     }
     setAnswerRequiredHint(false);
+    setSubmitPhase('submitting');
     setSubmitting(true);
+    setConfirmOpen(false);
     try {
       const payload = answersRef.current;
       await submitExam(session.attemptId, payload);
+      setSubmitPhase('grading');
       allowLeaveRef.current = true;
       setLeaveAllowed(true);
       router.push(academyCertificateExamResultPath(certificateSlug, session.attemptId, 'submit'));
     } catch (error) {
+      if (error instanceof ApiRequestError && error.code === 'ALREADY_SUBMITTED') {
+        allowLeaveRef.current = true;
+        setLeaveAllowed(true);
+        router.push(academyCertificateExamResultPath(certificateSlug, session.attemptId, 'review'));
+        return;
+      }
       const msg = error instanceof Error ? error.message : '';
       if (msg.includes('TIME_EXPIRED')) {
         setTimedOut(true);
@@ -286,6 +296,7 @@ export function ExamPageView({ certificateSlug }: Props) {
         setLeaveAllowed(true);
       }
       setSubmitting(false);
+      setSubmitPhase('submitting');
     }
   }
 
@@ -426,7 +437,7 @@ export function ExamPageView({ certificateSlug }: Props) {
   }
 
   return (
-    <div className={`exam-page${timedOut ? ' is-timed-out' : ''}`}>
+    <div className={`exam-page${timedOut ? ' is-timed-out' : ''}${submitting ? ' is-submitting' : ''}`}>
       <div className="exam-topbar" aria-hidden={timedOut}>
         <div className="exam-topbar-left">
           <Link
@@ -441,23 +452,30 @@ export function ExamPageView({ certificateSlug }: Props) {
             {companyName || null}
           </Link>
           <div className="exam-topbar-divider" />
-          <span className="exam-topbar-exam">{session.title}</span>
+          <span className="exam-topbar-exam">{session.certificateTitle || session.title}</span>
         </div>
-        <div className="exam-topbar-center">
-          {secondsLeft != null ? (
-            <div className={`exam-timer${secondsLeft <= 300 || timedOut ? ' is-urgent' : ''}`}>
-              <span>{formatTimer(Math.max(0, secondsLeft))}</span>
+        <div className="exam-topbar-right">
+          <div className="exam-topbar-center">
+            {secondsLeft != null ? (
+              <div className={`exam-timer${secondsLeft <= 300 || timedOut ? ' is-urgent' : ''}`}>
+                <span>{formatTimer(Math.max(0, secondsLeft))}</span>
+              </div>
+            ) : null}
+            <div className="exam-stats">
+              <span><span className="dot dot-done" /> {t('academy.exam.answered')} {stats.answered}</span>
+              <span><span className="dot dot-current" /> {t('academy.exam.current')} {currentIndex + 1}</span>
+              <span><span className="dot dot-marked" /> {t('academy.exam.marked')} {stats.marked}</span>
             </div>
-          ) : null}
-          <div className="exam-stats">
-            <span><span className="dot dot-done" /> {t('academy.exam.answered')} {stats.answered}</span>
-            <span><span className="dot dot-current" /> {t('academy.exam.current')} {currentIndex + 1}</span>
-            <span><span className="dot dot-marked" /> {t('academy.exam.marked')} {stats.marked}</span>
           </div>
+          <button
+            type="button"
+            className={`btn-primary exam-topbar__submit${submitting ? ' is-loading' : ''}`}
+            onClick={requestSubmit}
+            disabled={submitting || timedOut}
+          >
+            {submitting ? t('academy.exam.submittingPaper') : t('academy.exam.submitPaper')}
+          </button>
         </div>
-        <button type="button" className="btn-primary" onClick={requestSubmit} disabled={submitting || timedOut}>
-          {t('academy.exam.submitPaper')}
-        </button>
       </div>
 
       <div className="exam-layout-grid" aria-hidden={timedOut}>
@@ -531,7 +549,9 @@ export function ExamPageView({ certificateSlug }: Props) {
             </div>
             <div className="exam-modal-actions">
               <button type="button" className="btn-secondary" onClick={() => setConfirmOpen(false)}>{t('academy.exam.confirmCancel')}</button>
-              <button type="button" className="btn-primary" onClick={() => void handleSubmit()} disabled={submitting || timedOut}>{t('academy.exam.confirmSubmit')}</button>
+              <button type="button" className="btn-primary" onClick={() => void handleSubmit()} disabled={submitting || timedOut}>
+                {submitting ? t('academy.exam.submittingPaper') : t('academy.exam.confirmSubmit')}
+              </button>
             </div>
           </div>
         </div>
@@ -566,6 +586,18 @@ export function ExamPageView({ certificateSlug }: Props) {
             <Link href={certificateHref} className="btn-primary exam-timeout-card__cta">
               {t('academy.result.backToLearn')}
             </Link>
+          </div>
+        </div>
+      ) : null}
+
+      {submitting ? (
+        <div className="exam-submit-overlay" role="alertdialog" aria-modal="true" aria-busy="true" aria-labelledby="exam-submit-title">
+          <div className="exam-submit-card">
+            <div className="exam-submit-card__spinner" aria-hidden="true" />
+            <h2 id="exam-submit-title">
+              {submitPhase === 'grading' ? t('academy.exam.gradingPaper') : t('academy.exam.submittingPaper')}
+            </h2>
+            <p>{t('academy.exam.submittingHint')}</p>
           </div>
         </div>
       ) : null}

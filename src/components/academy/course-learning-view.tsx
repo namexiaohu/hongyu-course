@@ -5,12 +5,14 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 
 import { LessonNotesPanel } from '@/components/academy/lesson-notes-panel';
+import { InlineLoading } from '@/components/ui/inline-loading';
+import { LearnContentSkeleton, LearnSidebarSkeleton } from '@/components/ui/learn-skeleton';
 import { useAuth } from '@/components/providers/auth-provider';
 import { useAuthModal } from '@/components/providers/auth-modal-provider';
-import { useSiteBranding } from '@/components/providers/site-branding-provider';
 import { academyCourseDetailPath } from '@/lib/academy-certificate-course';
 import { getCourseWatchProgress, touchCourseProgress } from '@/lib/academy-home-api';
 import { getCourseLessonProgress, markCourseLessonCompleted } from '@/lib/academy-progress-api';
+import { formatFileSize } from '@/lib/format-file-size';
 import type {
   StorefrontAcademyCourseDetail,
   StorefrontAcademyLessonItem,
@@ -33,43 +35,15 @@ function flattenLessons(units: StorefrontAcademyUnitItem[]) {
   return items;
 }
 
-function formatFileSize(bytes: number | null | undefined, fallback = '') {
-  if (bytes == null || !Number.isFinite(bytes) || bytes <= 0) return fallback;
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-}
-
-function LearnContentSkeleton() {
-  return (
-    <div className="learn-content-skeleton" role="status" aria-live="polite" aria-busy="true">
-      <div className="learn-content-skeleton__video learn-shimmer" />
-      <div className="learn-content-skeleton__title learn-shimmer" />
-      <div className="learn-content-skeleton__line learn-shimmer" />
-      <div className="learn-content-skeleton__line learn-shimmer learn-content-skeleton__line--short" />
-    </div>
-  );
-}
-
-function LearnSidebarSkeleton() {
-  return (
-    <div className="learn-sidebar-skeleton" role="status" aria-live="polite" aria-busy="true">
-      <div className="learn-sidebar-skeleton__tab learn-shimmer" />
-      <div className="learn-sidebar-skeleton__tab learn-shimmer" />
-      <div className="learn-sidebar-skeleton__block learn-shimmer" />
-      <div className="learn-sidebar-skeleton__line learn-shimmer" />
-      <div className="learn-sidebar-skeleton__line learn-shimmer" />
-      <div className="learn-sidebar-skeleton__line learn-shimmer learn-sidebar-skeleton__line--short" />
-    </div>
-  );
-}
-
 export function CourseLearningView({ course, certificateCourseId }: Props) {
   const { t } = useTranslation();
-  const { companyName } = useSiteBranding();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const { openAuthModal } = useAuthModal();
   const courseHref = academyCourseDetailPath(course.slug, certificateCourseId);
+  const certificateLink = useMemo(
+    () => course.certificateLinks?.find((item) => item.certificateCourseId === certificateCourseId) ?? null,
+    [course.certificateLinks, certificateCourseId],
+  );
   const units = course.units ?? [];
   const flat = useMemo(() => flattenLessons(units), [units]);
   const [activeLessonId, setActiveLessonId] = useState('');
@@ -344,7 +318,11 @@ export function CourseLearningView({ course, certificateCourseId }: Props) {
               <rect x="3" y="3" width="18" height="18" rx="2" />
               <path d="M3 9h18" />
             </svg>
-            {companyName ? <span>{companyName}</span> : null}
+            {certificateLink?.certificateTitle ? (
+              <Link href={certificateLink.href} title={certificateLink.certificateTitle}>
+                {certificateLink.certificateTitle}
+              </Link>
+            ) : null}
           </div>
           <Link href={courseHref} className="sidebar-left-title" title={course.title}>
             {course.title}
@@ -353,10 +331,7 @@ export function CourseLearningView({ course, certificateCourseId }: Props) {
 
         <nav className="units-nav">
           {isAuthenticated && !progressReady ? (
-            <div className="learn-nav-loading" role="status" aria-live="polite" aria-busy="true">
-              <span className="detail-inline-loading__spinner" aria-hidden="true" />
-              <span>{t('academy.home.loading')}</span>
-            </div>
+            <InlineLoading label={t('academy.home.loading')} className="inline-loading--nav" />
           ) : (
           units.map((unit, unitIndex) => {
             const unitActive = active?.unit.id === unit.id;

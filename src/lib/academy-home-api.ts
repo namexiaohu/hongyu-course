@@ -13,6 +13,14 @@ export type AcademyHomeProgressItem = {
   positionSeconds: number;
   href: string;
   certificateHref: string;
+  status: 'learning' | 'courses_complete';
+  progressPercent: number;
+  completedLessonCount: number;
+  totalLessonCount: number;
+  courseIndex: number;
+  courseTotal: number;
+  continueLearnHref: string;
+  exam: { hasExam: boolean; examHref: string | null } | null;
 };
 
 export type AcademyHomeDashboard = {

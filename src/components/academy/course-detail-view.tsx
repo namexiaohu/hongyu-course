@@ -4,18 +4,20 @@ import { useEffect, useMemo, useState } from 'react';
 
 import Link from 'next/link';
 
+import { AcademyDetailSidebar } from '@/components/academy/academy-detail-sidebar';
 import { AcademyHeroVisual } from '@/components/academy/academy-hero-visual';
-import { CoursesIcon, LearnersIcon } from '@/components/academy/academy-stat-icons';
+import { HeroResume } from '@/components/academy/hero-resume';
 import { CourseHeroDecoration } from '@/components/academy/hero-decorations';
+import { InlineLoading } from '@/components/ui/inline-loading';
 import { useAuth } from '@/components/providers/auth-provider';
 import { useAuthModal } from '@/components/providers/auth-modal-provider';
-import { useSiteBranding } from '@/components/providers/site-branding-provider';
 import { academyLearnPath } from '@/lib/academy-certificate-course';
 import {
   getCourseWatchProgress,
   recordCourseView,
   type AcademyWatchProgress,
 } from '@/lib/academy-home-api';
+import { resolveWatchProgress } from '@/lib/academy-watch-progress';
 import { getCourseLessonProgress } from '@/lib/academy-progress-api';
 import { buildAcademyHeroSlides } from '@/lib/academy-hero-media';
 import type {
@@ -29,25 +31,8 @@ type Props = {
   certificateCourseId: string;
 };
 
-function resolveWatch(
-  watch: AcademyWatchProgress | null,
-  units: StorefrontAcademyUnitItem[],
-) {
-  if (!watch) return null;
-  const unit = units.find((item) => item.id === watch.unitId);
-  const lesson = unit?.lessons.find((item) => item.id === watch.lessonId);
-  if (!unit || !lesson) return null;
-  return {
-    unitTitle: unit.title,
-    lessonTitle: lesson.title,
-    positionSeconds: watch.positionSeconds,
-    durationSeconds: lesson.durationSeconds,
-  };
-}
-
 export function CourseDetailView({ course, certificateCourseId }: Props) {
   const { t } = useTranslation();
-  const { companyName, positioning } = useSiteBranding();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const { openAuthModal } = useAuthModal();
   const [tab, setTab] = useState<'about' | 'units'>('about');
@@ -68,8 +53,9 @@ export function CourseDetailView({ course, certificateCourseId }: Props) {
     coverDisplay: course.coverDisplay,
   });
   const units = useMemo(() => course.units ?? [], [course.units]);
-  const resume = useMemo(() => resolveWatch(watch, units), [watch, units]);
+  const resume = useMemo(() => resolveWatchProgress(watch, units), [watch, units]);
   const progressLoading = isAuthenticated && !progressReady;
+  const loadingLabel = t('academy.home.loading');
 
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -139,15 +125,6 @@ export function CourseDetailView({ course, certificateCourseId }: Props) {
     return unit.lessons.every((lesson) => completedIds.has(lesson.id));
   }
 
-  function renderProgressLoading() {
-    return (
-      <div className="detail-inline-loading" role="status" aria-live="polite" aria-busy="true">
-        <span className="detail-inline-loading__spinner" aria-hidden="true" />
-        <span>{t('academy.home.loading')}</span>
-      </div>
-    );
-  }
-
   return (
     <>
       <section className="hero">
@@ -162,8 +139,8 @@ export function CourseDetailView({ course, certificateCourseId }: Props) {
             ) : null}
             <h1>{course.title}</h1>
             <p className="hero__lead">{course.summary}</p>
-            {isAuthenticated && !progressReady ? (
-              renderProgressLoading()
+            {progressLoading ? (
+              <InlineLoading label={loadingLabel} className="inline-loading--detail" />
             ) : !isAuthenticated ? (
               <div className="hero__actions">
                 <button type="button" className="btn-primary" onClick={() => openAuthModal('register')}>
@@ -184,15 +161,14 @@ export function CourseDetailView({ course, certificateCourseId }: Props) {
                   {watch ? t('academy.course.continueCourse') : t('academy.course.startCourse')}
                 </a>
                 {resume ? (
-                  <div className="hero__resume">
-                    <p className="hero__resume-lesson">{resume.unitTitle} / {resume.lessonTitle}</p>
-                    <p className="hero__resume-meta">
-                      {t('academy.home.videoMeta', {
-                        watched: resume.positionSeconds,
-                        duration: resume.durationSeconds,
-                      })}
-                    </p>
-                  </div>
+                  <HeroResume
+                    unitTitle={resume.unitTitle}
+                    lessonTitle={resume.lessonTitle}
+                    meta={t('academy.home.videoMeta', {
+                      watched: resume.positionSeconds,
+                      duration: resume.durationSeconds,
+                    })}
+                  />
                 ) : null}
               </div>
             )}
@@ -234,7 +210,7 @@ export function CourseDetailView({ course, certificateCourseId }: Props) {
               <>
                 <h2>{t('academy.course.modules')}</h2>
                 {progressLoading ? (
-                  renderProgressLoading()
+                  <InlineLoading label={loadingLabel} className="inline-loading--detail" />
                 ) : (
                 <div className="course-accordion">
                   {units.map((unit, index) => {
@@ -310,41 +286,12 @@ export function CourseDetailView({ course, certificateCourseId }: Props) {
               </>
             )}
           </div>
-          <aside className="sidebar-card">
-            <h3 className="sidebar-card__title">
-              {t('academy.certificate.teachers', { count: course.teacherCount })}
-            </h3>
-            <div className="instructor-row">
-              <div className="instructor-avatar" aria-hidden="true">
-                <svg viewBox="0 0 24 24"><path d="M12 2L2 7v10l10 5 10-5V7L12 2z" /></svg>
-              </div>
-              <div>
-                {companyName ? <div className="instructor-name">{companyName}</div> : null}
-                {positioning ? <div className="instructor-org">{positioning}</div> : null}
-              </div>
-            </div>
-            <p className="instructor-stats instructor-stats--icons">
-              <span className="cert-card__meta-item">
-                <CoursesIcon />
-                {t('academy.course.instructorUnits', { count: units.length })}
-              </span>
-              <span className="cert-card__meta-dot" aria-hidden>·</span>
-              <span className="cert-card__meta-item">
-                <LearnersIcon />
-                {t('academy.certificate.instructorStudents', { count: course.studentCount.toLocaleString() })}
-              </span>
-            </p>
-            <hr className="sidebar-divider" />
-            <h3 className="sidebar-card__title">{t('academy.certificate.provider')}</h3>
-            {companyName ? (
-              <div className="provider-row">
-                <div className="provider-logo" aria-hidden="true">
-                  <svg viewBox="0 0 24 24"><path d="M12 2L2 7v10l10 5 10-5V7L12 2z" /></svg>
-                </div>
-                <div className="provider-name">{companyName}</div>
-              </div>
-            ) : null}
-          </aside>
+          <AcademyDetailSidebar
+            teachersTitle={t('academy.certificate.teachers', { count: course.teacherCount })}
+            primaryStat={t('academy.course.instructorUnits', { count: units.length })}
+            studentsStat={t('academy.certificate.instructorStudents', { count: course.studentCount.toLocaleString() })}
+            providerTitle={t('academy.certificate.provider')}
+          />
         </div>
       </div>
     </>

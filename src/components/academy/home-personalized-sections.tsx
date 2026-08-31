@@ -6,6 +6,7 @@ import Link from 'next/link';
 
 import { CertificateCard } from '@/components/academy/certificate-card';
 import { CourseListCard } from '@/components/academy/course-list-card';
+import { InlineLoading } from '@/components/ui/inline-loading';
 import { useAuth } from '@/components/providers/auth-provider';
 import { useSiteBranding } from '@/components/providers/site-branding-provider';
 import {
@@ -13,6 +14,8 @@ import {
   type AcademyHomeDashboardPayload,
   type AcademyHomeProgressItem,
 } from '@/lib/academy-home-api';
+import { academyCourseDetailPath } from '@/lib/academy-certificate-course';
+import { displayNameFromUser } from '@/lib/display-name';
 import { useTranslation } from '@/lib/i18n-context';
 
 function WelcomeDecoration({ tall }: { tall?: boolean }) {
@@ -48,6 +51,9 @@ function WelcomeDecoration({ tall }: { tall?: boolean }) {
 
 function ContinueCard({ item, embedded }: { item: AcademyHomeProgressItem; embedded?: boolean }) {
   const { t } = useTranslation();
+  const showExamActions = item.status === 'courses_complete' && item.exam?.hasExam && item.exam.examHref;
+  const courseDetailHref = academyCourseDetailPath(item.courseSlug, item.certificateCourseId);
+
   return (
     <div className={`continue-card${embedded ? ' continue-card--embedded' : ''}`}>
       <div className="continue-card-left">
@@ -57,9 +63,25 @@ function ContinueCard({ item, embedded }: { item: AcademyHomeProgressItem; embed
               <rect x="3" y="3" width="18" height="18" rx="2" />
               <path d="M3 9h18" />
             </svg>
-            {item.certificateTitle}
+            <a
+              href={item.certificateHref}
+              className="continue-card-link"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {item.certificateTitle}
+            </a>
           </p>
-          <h2 className="continue-card-title">{item.courseTitle}</h2>
+          <h2 className="continue-card-title">
+            <a
+              href={courseDetailHref}
+              className="continue-card-link"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {item.courseTitle}
+            </a>
+          </h2>
           <p className="continue-card-subtitle">{item.unitTitle} / {item.lessonTitle}</p>
           <p className="continue-card-meta">
             {t('academy.home.videoMeta', {
@@ -69,7 +91,35 @@ function ContinueCard({ item, embedded }: { item: AcademyHomeProgressItem; embed
           </p>
         </div>
         <div className="continue-card-actions">
-          <Link href={item.href} className="btn-primary">{t('academy.home.startNow')}</Link>
+          {showExamActions ? (
+            <>
+              <a
+                href={item.exam!.examHref!}
+                className="btn-primary"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {t('academy.certificate.enterExam')}
+              </a>
+              <a
+                href={item.continueLearnHref}
+                className="btn-secondary"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {t('academy.certificate.continueLearning')}
+              </a>
+            </>
+          ) : (
+            <a
+              href={item.href}
+              className="btn-primary"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {t('academy.home.startNow')}
+            </a>
+          )}
         </div>
       </div>
       <div className="continue-card-right">
@@ -88,19 +138,6 @@ function ContinueCard({ item, embedded }: { item: AcademyHomeProgressItem; embed
       </div>
     </div>
   );
-}
-
-function InlineLoading({ label }: { label: string }) {
-  return (
-    <div className="home-inline-loading" role="status" aria-live="polite" aria-busy="true">
-      <span className="home-inline-loading__spinner" aria-hidden />
-      <span>{label}</span>
-    </div>
-  );
-}
-
-function displayNameFromUser(firstName?: string, lastName?: string) {
-  return `${firstName ?? ''} ${lastName ?? ''}`.trim();
 }
 
 export function HomePersonalizedSections() {
@@ -209,7 +246,7 @@ export function HomePersonalizedSections() {
             <h2 className="section-title">{t('academy.home.continueLearning')}</h2>
             <div className="continue-grid">
               {restProgressItems.map((item) => (
-                <ContinueCard key={item.certificateCourseId} item={item} />
+                <ContinueCard key={item.certificateSlug} item={item} />
               ))}
             </div>
           </div>
@@ -217,7 +254,7 @@ export function HomePersonalizedSections() {
       ) : null}
 
       {!recordsPending && recentCourses.length ? (
-        <section className="section" style={{ paddingTop: progressItems.length ? 0 : undefined }}>
+        <section className="section" style={{ paddingTop: restProgressItems.length ? 0 : undefined }}>
           <div className="container">
             <h2 className="section-title">{t('academy.home.recentCourses')}</h2>
             <div className="recent-course-list">
@@ -237,7 +274,7 @@ export function HomePersonalizedSections() {
       ) : null}
 
       {!recordsPending && recentCertificates.length ? (
-        <section className="section" style={{ paddingTop: recentCourses.length || progressItems.length ? 0 : undefined }}>
+        <section className="section" style={{ paddingTop: recentCourses.length || restProgressItems.length ? 0 : undefined }}>
           <div className="container">
             <h2 className="section-title">{t('academy.home.recentCertificates')}</h2>
             <div className="cert-grid cert-grid--home">

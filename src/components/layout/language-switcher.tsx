@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 
 import { useTranslation } from '@/lib/i18n-context';
-import { LOCALE_COOKIE_NAME, localeStorageKey } from '@/lib/i18n';
+import { LOCALE_COOKIE_NAME } from '@/lib/i18n';
 import {
   getStorefrontLanguage,
   languageHtmlLang,
@@ -19,12 +19,12 @@ type LanguageSwitcherProps = {
 
 function readStoredLocale(languages: StorefrontLanguage[], fallback: string) {
   if (typeof window === 'undefined') return fallback;
-  const stored = window.localStorage.getItem(localeStorageKey);
+  const stored = window.localStorage.getItem(LOCALE_COOKIE_NAME);
   return pickStorefrontLocale(stored, languages);
 }
 
 function persistLocaleChoice(language: StorefrontLanguage) {
-  window.localStorage.setItem(localeStorageKey, language.code);
+  window.localStorage.setItem(LOCALE_COOKIE_NAME, language.code);
   document.cookie = `${LOCALE_COOKIE_NAME}=${encodeURIComponent(language.code)}; path=/; max-age=31536000; SameSite=Lax`;
 }
 

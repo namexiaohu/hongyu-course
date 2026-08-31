@@ -29,6 +29,7 @@ export type ExamStartResponse = {
   attemptId: string;
   certificateSlug: string;
   certificateId: string;
+  certificateTitle: string;
   questionBankId: string;
   title: string;
   passScorePercent: number;

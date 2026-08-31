@@ -137,6 +137,9 @@
     },
     "exam": {
       "submitPaper": "Submit paper",
+      "submittingPaper": "Submitting your exam…",
+      "gradingPaper": "Grading your answers…",
+      "submittingHint": "Please wait and do not close this page.",
       "next": "Next",
       "prev": "Previous",
       "starting": "Starting exam…",
@@ -231,6 +234,8 @@
       "issuer": "Issuer",
       "verifyUrl": "Verify at",
       "download": "Download PDF",
+      "downloading": "Generating PDF…",
+      "downloadFailed": "Could not generate the PDF. Please try again.",
       "backHome": "Back to home",
       "badge": "Professional Certificate"
     }
