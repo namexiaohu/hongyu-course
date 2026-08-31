@@ -2,12 +2,9 @@ import { apiFetch } from '@/lib/api-client';
 
 export type MyExamRecord = {
   attemptId: string;
-  courseSlug: string;
-  courseTitle: string;
-  examTitle: string;
-  certificateCourseId: string;
-  certificateTitle: string;
   certificateSlug: string;
+  certificateTitle: string;
+  examTitle: string;
   score: number;
   totalScore: number;
   scorePercent: number;
@@ -22,9 +19,8 @@ export type MyCertificateRecord = {
   issuerName: string;
   recipientName: string;
   issuedAt: string;
-  courseSlug: string;
+  certificateSlug: string;
   coverPreviewUrl: string;
-  courseCount: number;
 };
 
 export type PublicCertificate = {
@@ -34,7 +30,7 @@ export type PublicCertificate = {
   issuerName: string;
   recipientName: string;
   issuedAt: string;
-  courseSlug: string;
+  certificateSlug: string;
 };
 
 export async function listMyExams() {

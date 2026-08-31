@@ -25,6 +25,8 @@ export type AcademyHomeDashboard = {
   courseIndex: number;
   courseTotal: number;
   progressPercent: number;
+  completedLessonCount: number;
+  totalLessonCount: number;
   learnHref: string;
 };
 

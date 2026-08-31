@@ -10,23 +10,25 @@ export type ExamQuestionPublic = {
   content: Record<string, unknown>;
 };
 
-export type ExamEligibilityResponse = {
-  courseSlug: string;
-  courseId: string;
-  certificateCourseId: string;
-  isCourseComplete: boolean;
+export type CertificateExamEligibilityResponse = {
+  certificateSlug: string;
+  certificateId: string;
+  certificateTitle: string;
+  isCertificateComplete: boolean;
   hasQuestionBanks: boolean;
   submittedAttempts: number;
   remainingRetakes: number | null;
   canStartExam: boolean;
   examTitle: string;
+  questionCount: number;
+  passScorePercent: number;
   certificateNumber: string | null;
 };
 
 export type ExamStartResponse = {
   attemptId: string;
-  courseSlug: string;
-  certificateCourseId: string;
+  certificateSlug: string;
+  certificateId: string;
   questionBankId: string;
   title: string;
   passScorePercent: number;
@@ -61,10 +63,9 @@ export type ExamResultReviewItem = {
 
 export type ExamResultResponse = {
   attemptId: string;
-  courseSlug: string;
-  certificateCourseId: string;
-  certificateTitle: string;
   certificateSlug: string;
+  certificateId: string;
+  certificateTitle: string;
   title: string;
   score: number;
   totalScore: number;
@@ -83,18 +84,17 @@ export type ExamResultResponse = {
 
 export type ExamUserAnswer = number | number[] | boolean | string;
 
-export async function getExamEligibility(courseSlug: string, certificateCourseId: string) {
-  const params = new URLSearchParams({ certificateCourseId });
-  return apiFetch<ExamEligibilityResponse>(
-    `/api/front/academy/exams/${encodeURIComponent(courseSlug)}/eligibility?${params}`,
+export async function getCertificateExamEligibility(certificateSlug: string) {
+  return apiFetch<CertificateExamEligibilityResponse>(
+    `/api/front/academy/exams/certificates/${encodeURIComponent(certificateSlug)}/eligibility`,
   );
 }
 
-export async function startExam(courseSlug: string, certificateCourseId: string) {
-  return apiFetch<ExamStartResponse>(`/api/front/academy/exams/${encodeURIComponent(courseSlug)}/start`, {
-    method: 'POST',
-    body: JSON.stringify({ certificateCourseId }),
-  });
+export async function startCertificateExam(certificateSlug: string) {
+  return apiFetch<ExamStartResponse>(
+    `/api/front/academy/exams/certificates/${encodeURIComponent(certificateSlug)}/start`,
+    { method: 'POST', body: JSON.stringify({}) },
+  );
 }
 
 export async function submitExam(attemptId: string, answers: Record<string, ExamUserAnswer>) {
@@ -104,8 +104,8 @@ export async function submitExam(attemptId: string, answers: Record<string, Exam
   });
 }
 
-export async function getExamResult(attemptId: string, certificateCourseId: string) {
-  const params = new URLSearchParams({ certificateCourseId });
+export async function getCertificateExamResult(attemptId: string, certificateSlug: string) {
+  const params = new URLSearchParams({ certificateSlug });
   return apiFetch<ExamResultResponse>(
     `/api/front/academy/exams/attempts/${encodeURIComponent(attemptId)}?${params}`,
   );

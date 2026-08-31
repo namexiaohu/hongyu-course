@@ -8,7 +8,7 @@ import { LessonNotesPanel } from '@/components/academy/lesson-notes-panel';
 import { useAuth } from '@/components/providers/auth-provider';
 import { useAuthModal } from '@/components/providers/auth-modal-provider';
 import { useSiteBranding } from '@/components/providers/site-branding-provider';
-import { academyCourseDetailPath, academyExamPath } from '@/lib/academy-certificate-course';
+import { academyCourseDetailPath } from '@/lib/academy-certificate-course';
 import { getCourseWatchProgress, touchCourseProgress } from '@/lib/academy-home-api';
 import { getCourseLessonProgress, markCourseLessonCompleted } from '@/lib/academy-progress-api';
 import type {
@@ -16,7 +16,6 @@ import type {
   StorefrontAcademyLessonItem,
   StorefrontAcademyUnitItem,
 } from '@/lib/storefront-academy-courses-api';
-import { getExamEligibility } from '@/lib/storefront-academy-exams-api';
 import { useTranslation } from '@/lib/i18n-context';
 
 type Props = {
@@ -47,7 +46,6 @@ export function CourseLearningView({ course, certificateCourseId }: Props) {
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const { openAuthModal } = useAuthModal();
   const courseHref = academyCourseDetailPath(course.slug, certificateCourseId);
-  const examHref = academyExamPath(course.slug, certificateCourseId);
   const units = course.units ?? [];
   const flat = useMemo(() => flattenLessons(units), [units]);
   const [activeLessonId, setActiveLessonId] = useState(flat[0]?.lesson.id ?? '');
@@ -55,7 +53,6 @@ export function CourseLearningView({ course, certificateCourseId }: Props) {
   const [videoStarted, setVideoStarted] = useState(false);
   const [rightTab, setRightTab] = useState<'notes' | 'files'>('notes');
   const [completedIds, setCompletedIds] = useState<Set<string>>(() => new Set());
-  const [certificateNumber, setCertificateNumber] = useState<string | null>(null);
   const [expandedUnits, setExpandedUnits] = useState<Record<string, boolean>>(() => {
     const initial: Record<string, boolean> = {};
     for (const unit of units) initial[unit.id] = true;
@@ -75,22 +72,10 @@ export function CourseLearningView({ course, certificateCourseId }: Props) {
   activeLessonIdRef.current = activeLessonId;
   const accessBlocked = authLoading || !isAuthenticated;
   const allLessonIds = useMemo(() => flat.map((item) => item.lesson.id), [flat]);
-  const isCourseComplete = useMemo(
-    () => allLessonIds.length > 0 && allLessonIds.every((id) => completedIds.has(id)),
-    [allLessonIds, completedIds],
-  );
-  const completedLessonCount = useMemo(
-    () => allLessonIds.filter((id) => completedIds.has(id)).length,
-    [allLessonIds, completedIds],
-  );
-  const lessonProgressPercent = allLessonIds.length
-    ? Math.round((completedLessonCount / allLessonIds.length) * 100)
-    : 0;
 
   useEffect(() => {
     if (!isAuthenticated) {
       setCompletedIds(new Set());
-      setCertificateNumber(null);
       return;
     }
 
@@ -104,19 +89,10 @@ export function CourseLearningView({ course, certificateCourseId }: Props) {
         if (!cancelled) setCompletedIds(new Set());
       });
 
-    void getExamEligibility(course.slug, certificateCourseId)
-      .then((eligibility) => {
-        if (cancelled) return;
-        setCertificateNumber(eligibility.certificateNumber ?? null);
-      })
-      .catch(() => {
-        if (!cancelled) setCertificateNumber(null);
-      });
-
     return () => {
       cancelled = true;
     };
-  }, [course.slug, certificateCourseId, isAuthenticated]);
+  }, [course.slug, isAuthenticated]);
 
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -371,86 +347,6 @@ export function CourseLearningView({ course, certificateCourseId }: Props) {
             );
           })}
         </nav>
-
-        <div className={`learn-exam-footer${certificateNumber || isCourseComplete ? ' is-ready' : ''}${certificateNumber ? ' is-certified' : ''}`}>
-          {certificateNumber ? (
-            <div className="learn-exam-compact learn-exam-compact--certified">
-              <div className="learn-exam-compact__hero">
-                <div className="learn-exam-compact__icon learn-exam-compact__icon--certified" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <circle cx="12" cy="8" r="6" />
-                    <path d="M8.2 13.4L7 22l5-3 5 3-1.2-8.6" />
-                  </svg>
-                </div>
-                <div className="learn-exam-compact__titles">
-                  <p className="learn-exam-compact__eyebrow">{t('academy.learn.certObtainedEyebrow')}</p>
-                  <p className="learn-exam-compact__title">{t('academy.learn.certObtainedTitle')}</p>
-                </div>
-              </div>
-              <Link
-                href={`/cert/${encodeURIComponent(certificateNumber)}`}
-                className="learn-exam-compact__cta learn-exam-compact__cta--certified"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                {t('academy.learn.viewCertificate')}
-              </Link>
-            </div>
-          ) : isCourseComplete ? (
-            <div className="learn-exam-compact learn-exam-compact--ready">
-              <div className="learn-exam-compact__hero">
-                <div className="learn-exam-compact__icon learn-exam-compact__icon--ready" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
-                    <polyline points="14 2 14 8 20 8" />
-                    <path d="M9 15l2 2 4-4" />
-                  </svg>
-                </div>
-                <div className="learn-exam-compact__titles">
-                  <p className="learn-exam-compact__eyebrow">{t('academy.learn.examGoalEyebrow')}</p>
-                  <p className="learn-exam-compact__title">{t('academy.learn.examReadyTitle')}</p>
-                </div>
-              </div>
-              <Link href={examHref} className="learn-exam-compact__cta" target="_blank" rel="noopener noreferrer">
-                {t('academy.learn.enterExam')}
-              </Link>
-            </div>
-          ) : (
-            <div className="learn-exam-compact">
-              <div className="learn-exam-compact__hero">
-                <div className="learn-exam-compact__icon" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
-                    <polyline points="14 2 14 8 20 8" />
-                    <path d="M9 15l2 2 4-4" />
-                  </svg>
-                </div>
-                <div className="learn-exam-compact__titles">
-                  <p className="learn-exam-compact__eyebrow">{t('academy.learn.examGoalEyebrow')}</p>
-                  <p className="learn-exam-compact__title">{t('academy.learn.examGoalTitle')}</p>
-                </div>
-                <span className="learn-exam-compact__count">{completedLessonCount}/{allLessonIds.length}</span>
-              </div>
-              <div
-                className="learn-exam-compact__bar"
-                role="progressbar"
-                aria-valuenow={lessonProgressPercent}
-                aria-valuemin={0}
-                aria-valuemax={100}
-                aria-label={t('academy.learn.examProgress', { completed: String(completedLessonCount), total: String(allLessonIds.length) })}
-              >
-                <span style={{ width: `${lessonProgressPercent}%` }} />
-              </div>
-              <p className="learn-exam-compact__hint">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-                  <rect x="3" y="11" width="18" height="11" rx="2" />
-                  <path d="M7 11V7a5 5 0 0110 0v4" />
-                </svg>
-                {t('academy.learn.examLocked')}
-              </p>
-            </div>
-          )}
-        </div>
       </aside>
 
       <main className="learning-main">

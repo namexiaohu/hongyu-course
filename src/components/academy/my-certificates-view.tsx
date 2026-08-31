@@ -107,10 +107,6 @@ export function MyCertificatesView() {
                 </div>
                 <div className="cert-card-meta">
                   <span>
-                    {t('academy.myCertificates.courseCount').replace('{count}', String(item.courseCount ?? 1))}
-                  </span>
-                  <span className="dot">·</span>
-                  <span>
                     {t('academy.myCertificates.issuedAt').replace('{date}', formatMonth(item.issuedAt, locale))}
                   </span>
                 </div>

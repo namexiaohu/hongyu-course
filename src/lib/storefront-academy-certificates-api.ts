@@ -43,6 +43,12 @@ export type StorefrontAcademyCertificateDetail = {
   skills: string[];
   tools: string[];
   courses: StorefrontAcademyCertificateCourseItem[];
+  examHint: {
+    hasExam: boolean;
+    questionCount?: number;
+    passScorePercent?: number;
+    totalCourses?: number;
+  };
   seo: { title: string; description: string };
 };
 

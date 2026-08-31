@@ -6,16 +6,15 @@ import { useEffect, useMemo, useState } from 'react';
 import { PageLoading } from '@/components/ui/page-loading';
 import { useAuth } from '@/components/providers/auth-provider';
 import { useAuthModal } from '@/components/providers/auth-modal-provider';
-import { academyCourseDetailPath, academyExamPath, academyLearnPath } from '@/lib/academy-certificate-course';
+import { academyCertificateExamPath, academyCertificateExamResultPath } from '@/lib/academy-certificate-course';
 import type { ExamResultResponse } from '@/lib/storefront-academy-exams-api';
-import { getExamResult } from '@/lib/storefront-academy-exams-api';
+import { getCertificateExamResult } from '@/lib/storefront-academy-exams-api';
 import { useTranslation } from '@/lib/i18n-context';
 
 type Props = {
-  slug: string;
+  certificateSlug: string;
   attemptId: string;
   source: 'submit' | 'review';
-  certificateCourseId: string;
 };
 
 type Filter = 'all' | 'correct' | 'wrong';
@@ -142,13 +141,12 @@ function formatDuration(seconds: number) {
   return `${m}:${String(s).padStart(2, '0')}`;
 }
 
-export function ExamResultView({ slug, attemptId, source, certificateCourseId }: Props) {
+export function ExamResultView({ certificateSlug, attemptId, source }: Props) {
   const { t } = useTranslation();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const { openAuthModal } = useAuthModal();
-  const learnHref = academyLearnPath(slug, certificateCourseId);
-  const courseHref = academyCourseDetailPath(slug, certificateCourseId);
-  const examHref = academyExamPath(slug, certificateCourseId);
+  const certificateHref = `/certificates/${certificateSlug}`;
+  const examHref = academyCertificateExamPath(certificateSlug);
   const [result, setResult] = useState<ExamResultResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
@@ -161,16 +159,16 @@ export function ExamResultView({ slug, attemptId, source, certificateCourseId }:
       setLoading(false);
       return;
     }
-    if (!attemptId || !certificateCourseId) {
+    if (!attemptId || !certificateSlug) {
       setNotFound(true);
       setLoading(false);
       return;
     }
-    void getExamResult(attemptId, certificateCourseId)
+    void getCertificateExamResult(attemptId, certificateSlug)
       .then(setResult)
       .catch(() => setNotFound(true))
       .finally(() => setLoading(false));
-  }, [attemptId, certificateCourseId, authLoading, isAuthenticated]);
+  }, [attemptId, certificateSlug, authLoading, isAuthenticated]);
 
   const filteredReview = useMemo(() => {
     if (!result) return [];
@@ -198,8 +196,8 @@ export function ExamResultView({ slug, attemptId, source, certificateCourseId }:
     return (
       <div className="exam-gate">
         <p>{t('academy.result.notFound')}</p>
-        <Link href={courseHref} className="btn-secondary" style={{ marginTop: 16, display: 'inline-flex' }}>
-          {t('academy.result.backToCourse')}
+        <Link href={certificateHref} className="btn-secondary" style={{ marginTop: 16, display: 'inline-flex' }}>
+          {t('academy.result.backToCertificate')}
         </Link>
       </div>
     );
@@ -361,8 +359,7 @@ export function ExamResultView({ slug, attemptId, source, certificateCourseId }:
             {t('academy.result.retry')}
           </Link>
         ) : null}
-        <Link href={learnHref} className="btn-secondary">{t('academy.result.backToLearn')}</Link>
-        <Link href={courseHref} className="btn-secondary">{t('academy.result.backToCourse')}</Link>
+        <Link href={certificateHref} className="btn-secondary">{t('academy.result.backToCertificate')}</Link>
       </div>
     </div>
   );

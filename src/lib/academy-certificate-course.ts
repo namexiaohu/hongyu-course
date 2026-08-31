@@ -6,22 +6,17 @@ export function academyLearnPath(courseSlug: string, certificateCourseId: string
   return `/courses/${courseSlug}/learn?certificateCourseId=${encodeURIComponent(certificateCourseId)}`;
 }
 
-export function academyExamPath(courseSlug: string, certificateCourseId: string) {
-  return `/courses/${courseSlug}/exam?certificateCourseId=${encodeURIComponent(certificateCourseId)}`;
+export function academyCertificateExamPath(certificateSlug: string) {
+  return `/certificates/${certificateSlug}/exam`;
 }
 
-export function academyExamResultPath(
-  courseSlug: string,
-  certificateCourseId: string,
+export function academyCertificateExamResultPath(
+  certificateSlug: string,
   attemptId: string,
   source: 'submit' | 'review',
 ) {
-  const params = new URLSearchParams({
-    attemptId,
-    source,
-    certificateCourseId,
-  });
-  return `/courses/${courseSlug}/exam/result?${params.toString()}`;
+  const params = new URLSearchParams({ attemptId, source });
+  return `/certificates/${certificateSlug}/exam/result?${params.toString()}`;
 }
 
 export type ResolveCertificateCourseResult =

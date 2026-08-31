@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { PageLoading } from '@/components/ui/page-loading';
 import { useAuth } from '@/components/providers/auth-provider';
 import { useAuthModal } from '@/components/providers/auth-modal-provider';
-import { academyExamResultPath } from '@/lib/academy-certificate-course';
+import { academyCertificateExamResultPath } from '@/lib/academy-certificate-course';
 import { useTranslation } from '@/lib/i18n-context';
 import type { MyExamRecord } from '@/lib/storefront-academy-records-api';
 import { listMyExams } from '@/lib/storefront-academy-records-api';
@@ -110,11 +110,8 @@ export function MyExamsView() {
                 {item.passed ? '✓' : '✕'}
               </div>
               <div className="exam-info">
-                <div className="exam-course">{item.courseTitle}</div>
-                {item.certificateTitle ? (
-                  <div className="exam-title">{item.certificateTitle}</div>
-                ) : null}
-                <div className="exam-title">{item.examTitle || item.courseTitle}</div>
+                <div className="exam-course">{item.certificateTitle}</div>
+                <div className="exam-title">{item.examTitle || item.certificateTitle}</div>
                 <div className="exam-meta">
                   <span>
                     {t('academy.myExams.score')
@@ -131,7 +128,7 @@ export function MyExamsView() {
               </span>
               <a
                 className="btn-review"
-                href={academyExamResultPath(item.courseSlug, item.certificateCourseId, item.attemptId, 'review')}
+                href={academyCertificateExamResultPath(item.certificateSlug, item.attemptId, 'review')}
                 target="_blank"
                 rel="noopener noreferrer"
               >

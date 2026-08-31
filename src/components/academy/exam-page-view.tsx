@@ -8,12 +8,12 @@ import { useAuth } from '@/components/providers/auth-provider';
 import { useAuthModal } from '@/components/providers/auth-modal-provider';
 import { useSiteBranding } from '@/components/providers/site-branding-provider';
 import { PageLoading } from '@/components/ui/page-loading';
-import { academyExamResultPath, academyLearnPath } from '@/lib/academy-certificate-course';
+import { academyCertificateExamResultPath } from '@/lib/academy-certificate-course';
 import type { ExamQuestionPublic, ExamStartResponse, ExamUserAnswer } from '@/lib/storefront-academy-exams-api';
-import { startExam, submitExam } from '@/lib/storefront-academy-exams-api';
+import { startCertificateExam, submitExam } from '@/lib/storefront-academy-exams-api';
 import { useTranslation } from '@/lib/i18n-context';
 
-type Props = { slug: string; certificateCourseId: string };
+type Props = { certificateSlug: string };
 
 function isAnswered(type: ExamQuestionPublic['questionType'], value: ExamUserAnswer | undefined) {
   if (value === undefined || value === null) return false;
@@ -28,13 +28,13 @@ function formatTimer(seconds: number) {
   return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
 }
 
-export function ExamPageView({ slug, certificateCourseId }: Props) {
+export function ExamPageView({ certificateSlug }: Props) {
   const { t } = useTranslation();
   const { companyName } = useSiteBranding();
   const router = useRouter();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const { openAuthModal } = useAuthModal();
-  const learnHref = academyLearnPath(slug, certificateCourseId);
+  const certificateHref = `/certificates/${certificateSlug}`;
 
   const [session, setSession] = useState<ExamStartResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -80,7 +80,7 @@ export function ExamPageView({ slug, certificateCourseId }: Props) {
     setTimedOut(false);
     setAnswerRequiredHint(false);
     try {
-      const data = await startExam(slug, certificateCourseId);
+      const data = await startCertificateExam(certificateSlug);
       setSession(data);
       setCurrentIndex(0);
       setAnswers({});
@@ -100,7 +100,7 @@ export function ExamPageView({ slug, certificateCourseId }: Props) {
     } finally {
       setLoading(false);
     }
-  }, [slug, certificateCourseId]);
+  }, [certificateSlug]);
 
   useEffect(() => {
     if (authLoading) return;
@@ -211,7 +211,7 @@ export function ExamPageView({ slug, certificateCourseId }: Props) {
   }
 
   function confirmLeave() {
-    const href = pendingLeaveHref ?? learnHref;
+    const href = pendingLeaveHref ?? certificateHref;
     setLeaveConfirmOpen(false);
     setPendingLeaveHref(null);
     allowLeaveRef.current = true;
@@ -276,7 +276,7 @@ export function ExamPageView({ slug, certificateCourseId }: Props) {
       await submitExam(session.attemptId, payload);
       allowLeaveRef.current = true;
       setLeaveAllowed(true);
-      router.push(academyExamResultPath(slug, certificateCourseId, session.attemptId, 'submit'));
+      router.push(academyCertificateExamResultPath(certificateSlug, session.attemptId, 'submit'));
     } catch (error) {
       const msg = error instanceof Error ? error.message : '';
       if (msg.includes('TIME_EXPIRED')) {
@@ -418,7 +418,7 @@ export function ExamPageView({ slug, certificateCourseId }: Props) {
     return (
       <div className="exam-gate">
         <p>{message}</p>
-        <Link href={learnHref} className="btn-secondary" style={{ marginTop: 16, display: 'inline-flex' }}>
+        <Link href={certificateHref} className="btn-secondary" style={{ marginTop: 16, display: 'inline-flex' }}>
           {t('academy.result.backToLearn')}
         </Link>
       </div>
@@ -430,12 +430,12 @@ export function ExamPageView({ slug, certificateCourseId }: Props) {
       <div className="exam-topbar" aria-hidden={timedOut}>
         <div className="exam-topbar-left">
           <Link
-            href={learnHref}
+            href={certificateHref}
             className="exam-topbar-brand"
             onClick={(event) => {
               if (!shouldGuardLeave) return;
               event.preventDefault();
-              requestLeave(learnHref);
+              requestLeave(certificateHref);
             }}
           >
             {companyName || null}
@@ -563,7 +563,7 @@ export function ExamPageView({ slug, certificateCourseId }: Props) {
             </div>
             <h2 id="exam-timeout-title">{t('academy.exam.timeUp')}</h2>
             <p>{t('academy.exam.timeUpBody')}</p>
-            <Link href={learnHref} className="btn-primary exam-timeout-card__cta">
+            <Link href={certificateHref} className="btn-primary exam-timeout-card__cta">
               {t('academy.result.backToLearn')}
             </Link>
           </div>
