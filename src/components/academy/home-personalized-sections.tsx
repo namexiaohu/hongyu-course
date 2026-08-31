@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { CertificateCard } from '@/components/academy/certificate-card';
 import { CourseListCard } from '@/components/academy/course-list-card';
 import { useAuth } from '@/components/providers/auth-provider';
+import { useSiteBranding } from '@/components/providers/site-branding-provider';
 import {
   getAcademyHomeDashboard,
   type AcademyHomeDashboardPayload,
@@ -58,6 +59,7 @@ function displayNameFromUser(firstName?: string, lastName?: string) {
 
 export function HomePersonalizedSections() {
   const { t } = useTranslation();
+  const { companyName } = useSiteBranding();
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const [data, setData] = useState<AcademyHomeDashboardPayload | null>(null);
   const [fetchState, setFetchState] = useState<'idle' | 'loading' | 'ready'>('idle');
@@ -129,7 +131,9 @@ export function HomePersonalizedSections() {
                 {name ? `${name}, ` : null}
                 {t('academy.home.welcomeEmpty')}
               </p>
-              <h1 className="welcome-title">{t('academy.home.welcomeGuest')}</h1>
+              <h1 className="welcome-title">
+                {companyName ? t('academy.home.welcomeGuest', { name: companyName }) : t('academy.home.welcomeGuestFallback')}
+              </h1>
               <div style={{ marginTop: 16 }}>
                 <Link href="/certificates" className="btn-primary">
                   {t('academy.home.browseCertificates')}

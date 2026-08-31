@@ -5,10 +5,11 @@ import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import { LanguageSwitcher } from '@/components/layout/language-switcher';
+import { SiteLogo } from '@/components/layout/site-logo';
 import { useAuth } from '@/components/providers/auth-provider';
 import { useAuthModal } from '@/components/providers/auth-modal-provider';
 import { useTranslation } from '@/lib/i18n-context';
-import { SITE_BRAND, HOME_SITE_URL } from '@/lib/site-config';
+import type { StorefrontCompanyBranding } from '@/lib/storefront-company';
 import type { StorefrontLanguage } from '@/lib/storefront-languages';
 import { getUserInitial } from '@/lib/user-initial';
 
@@ -16,6 +17,7 @@ type Props = {
   children: React.ReactNode;
   languages: StorefrontLanguage[];
   locale: string;
+  branding: StorefrontCompanyBranding;
 };
 
 function HeaderSearch() {
@@ -50,7 +52,7 @@ function HeaderSearch() {
   );
 }
 
-export function CourseFrame({ children, languages, locale }: Props) {
+export function CourseFrame({ children, languages, locale, branding }: Props) {
   const pathname = usePathname();
   const { t } = useTranslation();
   const { user, isAuthenticated, logout } = useAuth();
@@ -82,7 +84,7 @@ export function CourseFrame({ children, languages, locale }: Props) {
       <header className={`course-nav${isLearning ? ' course-nav--learn' : ''}`}>
         <div className={`course-nav__inner${isLearning ? ' course-nav__inner--learn' : ''}`}>
           <div className="course-nav__left">
-            <Link href="/" className="course-nav__brand">{SITE_BRAND}</Link>
+            <SiteLogo companyName={branding.companyName} />
             {!isLearning ? (
               <nav className="course-nav__links">
                 <Link href="/certificates">{t('academy.nav.explore')}</Link>
@@ -141,10 +143,15 @@ export function CourseFrame({ children, languages, locale }: Props) {
       {!isLearning ? (
         <footer className="course-footer">
           <div className="course-footer__inner">
-            <p>© {new Date().getFullYear()} {SITE_BRAND}</p>
-            <div className="course-footer__links">
-              <a href={HOME_SITE_URL} className="course-nav__auth">{t('academy.footer.help')}</a>
+            <div className="course-footer__legal">
+              {branding.copyright ? <span>{branding.copyright}</span> : null}
+              {branding.icpNumber ? <span>{branding.icpNumber}</span> : null}
             </div>
+            {branding.website ? (
+              <div className="course-footer__links">
+                <a href={branding.website} className="course-nav__auth">{t('academy.footer.help')}</a>
+              </div>
+            ) : null}
           </div>
         </footer>
       ) : null}

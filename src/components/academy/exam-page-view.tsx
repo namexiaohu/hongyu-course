@@ -6,6 +6,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useAuth } from '@/components/providers/auth-provider';
 import { useAuthModal } from '@/components/providers/auth-modal-provider';
+import { useSiteBranding } from '@/components/providers/site-branding-provider';
 import { PageLoading } from '@/components/ui/page-loading';
 import { academyExamResultPath, academyLearnPath } from '@/lib/academy-certificate-course';
 import type { ExamQuestionPublic, ExamStartResponse, ExamUserAnswer } from '@/lib/storefront-academy-exams-api';
@@ -29,6 +30,7 @@ function formatTimer(seconds: number) {
 
 export function ExamPageView({ slug, certificateCourseId }: Props) {
   const { t } = useTranslation();
+  const { companyName } = useSiteBranding();
   const router = useRouter();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const { openAuthModal } = useAuthModal();
@@ -436,7 +438,7 @@ export function ExamPageView({ slug, certificateCourseId }: Props) {
               requestLeave(learnHref);
             }}
           >
-            {t('academy.certificate.academyName')}
+            {companyName || null}
           </Link>
           <div className="exam-topbar-divider" />
           <span className="exam-topbar-exam">{session.title}</span>

@@ -9,6 +9,7 @@ import { CoursesIcon, LearnersIcon } from '@/components/academy/academy-stat-ico
 import { CourseHeroDecoration } from '@/components/academy/hero-decorations';
 import { useAuth } from '@/components/providers/auth-provider';
 import { useAuthModal } from '@/components/providers/auth-modal-provider';
+import { useSiteBranding } from '@/components/providers/site-branding-provider';
 import { academyLearnPath } from '@/lib/academy-certificate-course';
 import {
   getCourseWatchProgress,
@@ -45,6 +46,7 @@ function resolveWatch(
 
 export function CourseDetailView({ course, certificateCourseId }: Props) {
   const { t } = useTranslation();
+  const { companyName, positioning } = useSiteBranding();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const { openAuthModal } = useAuthModal();
   const [tab, setTab] = useState<'about' | 'units'>('about');
@@ -239,8 +241,8 @@ export function CourseDetailView({ course, certificateCourseId }: Props) {
                 <svg viewBox="0 0 24 24"><path d="M12 2L2 7v10l10 5 10-5V7L12 2z" /></svg>
               </div>
               <div>
-                <div className="instructor-name">{t('academy.certificate.instructorTeam')}</div>
-                <div className="instructor-org">{t('academy.certificate.academyName')}</div>
+                {companyName ? <div className="instructor-name">{companyName}</div> : null}
+                {positioning ? <div className="instructor-org">{positioning}</div> : null}
               </div>
             </div>
             <p className="instructor-stats instructor-stats--icons">
@@ -256,12 +258,14 @@ export function CourseDetailView({ course, certificateCourseId }: Props) {
             </p>
             <hr className="sidebar-divider" />
             <h3 className="sidebar-card__title">{t('academy.certificate.provider')}</h3>
-            <div className="provider-row">
-              <div className="provider-logo" aria-hidden="true">
-                <svg viewBox="0 0 24 24"><path d="M12 2L2 7v10l10 5 10-5V7L12 2z" /></svg>
+            {companyName ? (
+              <div className="provider-row">
+                <div className="provider-logo" aria-hidden="true">
+                  <svg viewBox="0 0 24 24"><path d="M12 2L2 7v10l10 5 10-5V7L12 2z" /></svg>
+                </div>
+                <div className="provider-name">{companyName}</div>
               </div>
-              <div className="provider-name">{t('academy.certificate.academyName')}</div>
-            </div>
+            ) : null}
           </aside>
         </div>
       </div>

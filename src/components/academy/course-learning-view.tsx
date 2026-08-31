@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { LessonNotesPanel } from '@/components/academy/lesson-notes-panel';
 import { useAuth } from '@/components/providers/auth-provider';
 import { useAuthModal } from '@/components/providers/auth-modal-provider';
+import { useSiteBranding } from '@/components/providers/site-branding-provider';
 import { academyCourseDetailPath, academyExamPath } from '@/lib/academy-certificate-course';
 import { getCourseWatchProgress, touchCourseProgress } from '@/lib/academy-home-api';
 import { getCourseLessonProgress, markCourseLessonCompleted } from '@/lib/academy-progress-api';
@@ -42,6 +43,7 @@ function formatFileSize(bytes: number | null | undefined, fallback = '') {
 
 export function CourseLearningView({ course, certificateCourseId }: Props) {
   const { t } = useTranslation();
+  const { companyName } = useSiteBranding();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const { openAuthModal } = useAuthModal();
   const courseHref = academyCourseDetailPath(course.slug, certificateCourseId);
@@ -303,7 +305,7 @@ export function CourseLearningView({ course, certificateCourseId }: Props) {
               <rect x="3" y="3" width="18" height="18" rx="2" />
               <path d="M3 9h18" />
             </svg>
-            <span>{t('academy.certificate.academyName')}</span>
+            {companyName ? <span>{companyName}</span> : null}
           </div>
           <Link href={courseHref} className="sidebar-left-title" title={course.title}>
             {course.title}

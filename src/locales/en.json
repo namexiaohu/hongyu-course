@@ -13,7 +13,8 @@
       "help": "Help Center"
     },
     "home": {
-      "welcomeGuest": "Welcome to HONGYU Academy",
+      "welcomeGuest": "Welcome to {name}",
+      "welcomeGuestFallback": "Welcome",
       "welcomeBackTo": "welcome back to",
       "welcomeEmpty": "Explore a certificate to start learning.",
       "browseCertificates": "Browse certificates",
@@ -36,8 +37,6 @@
       "tools": "Tools you'll use",
       "courseList": "Courses in this certificate",
       "teachers": "{count} instructors",
-      "instructorTeam": "HONGYU Clinical Faculty Team",
-      "academyName": "HONGYU Academy",
       "instructorCourses": "{count} courses",
       "instructorStudents": "{count} students",
       "courseRowMeta": "Course {index} · {count} units",

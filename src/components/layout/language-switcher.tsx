@@ -33,17 +33,19 @@ export function LanguageSwitcher({
   initialLocale,
 }: LanguageSwitcherProps) {
   const { t } = useTranslation();
-  const [locale, setLocale] = useState(() => readStoredLocale(languages, initialLocale));
+  const [locale, setLocale] = useState(initialLocale);
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const current = getStorefrontLanguage(locale, languages);
 
   useEffect(() => {
-    const language = getStorefrontLanguage(locale, languages);
+    const nextLocale = readStoredLocale(languages, initialLocale);
+    const language = getStorefrontLanguage(nextLocale, languages);
+    setLocale(nextLocale);
     document.documentElement.lang = languageHtmlLang(language);
     document.documentElement.dir = language.direction;
-    document.cookie = `${LOCALE_COOKIE_NAME}=${encodeURIComponent(locale)}; path=/; max-age=31536000; SameSite=Lax`;
-  }, [locale, languages]);
+    document.cookie = `${LOCALE_COOKIE_NAME}=${encodeURIComponent(nextLocale)}; path=/; max-age=31536000; SameSite=Lax`;
+  }, [initialLocale, languages]);
 
   useEffect(() => {
     if (!open) return;
@@ -67,13 +69,11 @@ export function LanguageSwitcher({
 
   const selectLocale = (code: string) => {
     const language = getStorefrontLanguage(code, languages);
-    if (language.code === locale) {
-      setOpen(false);
-      return;
-    }
-    persistLocaleChoice(language);
     setLocale(language.code);
     setOpen(false);
+    persistLocaleChoice(language);
+    document.documentElement.lang = languageHtmlLang(language);
+    document.documentElement.dir = language.direction;
     window.dispatchEvent(new CustomEvent('hongyu:locale-change', { detail: { locale: language.code } }));
     window.location.reload();
   };
