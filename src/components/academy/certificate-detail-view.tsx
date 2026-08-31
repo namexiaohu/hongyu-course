@@ -77,7 +77,7 @@ function NoticeBox({
 export function CertificateDetailView({ certificate }: Props) {
   const { t } = useTranslation();
   const { companyName, positioning } = useSiteBranding();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
   const { openAuthModal } = useAuthModal();
   const [tab, setTab] = useState<'about' | 'courses'>('courses');
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
@@ -120,12 +120,14 @@ export function CertificateDetailView({ certificate }: Props) {
         id: unit.id,
         title: unit.title,
         sortOrder: unit.sortOrder,
+        isComplete: false,
         lessons: [],
       })),
     }));
   }, [certificate.courses, learning?.courses]);
 
   useEffect(() => {
+    if (authLoading) return;
     if (!isAuthenticated) {
       setLearning(null);
       setLearningReady(true);
@@ -136,7 +138,7 @@ export function CertificateDetailView({ certificate }: Props) {
       .then((state) => setLearning(state))
       .catch(() => setLearning(null))
       .finally(() => setLearningReady(true));
-  }, [certificate.slug, isAuthenticated]);
+  }, [authLoading, certificate.slug, isAuthenticated]);
 
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -151,7 +153,35 @@ export function CertificateDetailView({ certificate }: Props) {
   const examHref = academyCertificateExamPath(certificate.slug);
   const progressPercent = progress?.progressPercent ?? 0;
 
+  const progressLoading = isAuthenticated && !learningReady;
+
+  function renderProgressLoading() {
+    return (
+      <div className="detail-inline-loading" role="status" aria-live="polite" aria-busy="true">
+        <span className="detail-inline-loading__spinner" aria-hidden="true" />
+        <span>{t('academy.home.loading')}</span>
+      </div>
+    );
+  }
+
+  function renderContinueResume() {
+    const watch = learning?.continueWatch;
+    if (!watch) return null;
+    return (
+      <div className="hero__resume">
+        <p className="hero__resume-lesson">{watch.unitTitle} / {watch.lessonTitle}</p>
+        <p className="hero__resume-meta">
+          {t('academy.home.videoMeta', {
+            watched: watch.positionSeconds,
+            duration: watch.durationSeconds,
+          })}
+        </p>
+      </div>
+    );
+  }
+
   function renderHeroActions() {
+    if (progressLoading) return null;
     if (!isAuthenticated) {
       return (
         <div className="hero__actions">
@@ -178,6 +208,7 @@ export function CertificateDetailView({ certificate }: Props) {
               {t('academy.certificate.continueLearning')}
             </a>
           ) : null}
+          {renderContinueResume()}
         </div>
       );
     }
@@ -193,6 +224,7 @@ export function CertificateDetailView({ certificate }: Props) {
               {t('academy.certificate.continueLearning')}
             </a>
           ) : null}
+          {renderContinueResume()}
         </div>
       );
     }
@@ -205,6 +237,7 @@ export function CertificateDetailView({ certificate }: Props) {
               {t('academy.certificate.continueLearning')}
             </a>
           ) : null}
+          {renderContinueResume()}
         </div>
       );
     }
@@ -221,7 +254,7 @@ export function CertificateDetailView({ certificate }: Props) {
   }
 
   function renderProgressBlock() {
-    if (!isAuthenticated || !learningReady) return null;
+    if (!isAuthenticated || progressLoading) return null;
     if (status === 'not_started' && !progress) return null;
 
     const complete = status === 'courses_complete' || status === 'exam_passed';
@@ -240,6 +273,7 @@ export function CertificateDetailView({ certificate }: Props) {
   }
 
   function renderNotice() {
+    if (progressLoading) return null;
     if (status === 'exam_passed' && learning?.examResult) {
       return (
         <NoticeBox
@@ -300,12 +334,17 @@ export function CertificateDetailView({ certificate }: Props) {
       <section className="hero cert-detail-hero">
         <div className="container hero__grid">
           <div>
-            {companyName ? <p className="cert-hero-provider">{companyName}</p> : null}
             <h1>{certificate.title}</h1>
             <p className="hero__lead">{certificate.summary}</p>
-            {renderHeroActions()}
-            {renderProgressBlock()}
-            {renderNotice()}
+                {progressLoading ? (
+                  renderProgressLoading()
+                ) : (
+              <>
+                {renderHeroActions()}
+                {renderProgressBlock()}
+                {renderNotice()}
+              </>
+            )}
             <p className="cert-card__meta cert-card__meta--icons">
               <span className="cert-card__meta-item">
                 <LearnersIcon />
@@ -349,6 +388,9 @@ export function CertificateDetailView({ certificate }: Props) {
             ) : (
               <>
                 <h2>{t('academy.certificate.courseList')}</h2>
+                {progressLoading ? (
+                  renderProgressLoading()
+                ) : (
                 <div className="course-accordion">
                   {courseRows.map((course) => {
                     const isOpen = Boolean(expanded[course.slug]);
@@ -390,10 +432,17 @@ export function CertificateDetailView({ certificate }: Props) {
                             {staticCourse?.summary ? <p>{staticCourse.summary}</p> : null}
                             <div className="module-list">
                               {course.units.map((unit, unitIndex) => (
-                                <div key={unit.id}>
-                                  <div className="module-row">
-                                    <CoursesIcon />
-                                    <span>{unitIndex + 1}. {unit.title}</span>
+                                <div key={unit.id} className={`module-block${unit.isComplete ? ' is-complete' : ''}`}>
+                                  <div className={`module-row${unit.isComplete ? ' is-complete' : ''}`}>
+                                    {unit.isComplete ? (
+                                      <span className="module-row__check" aria-hidden="true">✓</span>
+                                    ) : (
+                                      <CoursesIcon />
+                                    )}
+                                    <span className="module-row__title">{unitIndex + 1}. {unit.title}</span>
+                                    {unit.isComplete ? (
+                                      <span className="module-row__badge">{t('academy.certificate.courseCompleted')}</span>
+                                    ) : null}
                                   </div>
                                   {unit.lessons.length ? (
                                     <div className="lesson-complete-list">
@@ -419,6 +468,7 @@ export function CertificateDetailView({ certificate }: Props) {
                     );
                   })}
                 </div>
+                )}
               </>
             )}
           </div>

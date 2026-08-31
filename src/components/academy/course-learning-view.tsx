@@ -40,6 +40,30 @@ function formatFileSize(bytes: number | null | undefined, fallback = '') {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
+function LearnContentSkeleton() {
+  return (
+    <div className="learn-content-skeleton" role="status" aria-live="polite" aria-busy="true">
+      <div className="learn-content-skeleton__video learn-shimmer" />
+      <div className="learn-content-skeleton__title learn-shimmer" />
+      <div className="learn-content-skeleton__line learn-shimmer" />
+      <div className="learn-content-skeleton__line learn-shimmer learn-content-skeleton__line--short" />
+    </div>
+  );
+}
+
+function LearnSidebarSkeleton() {
+  return (
+    <div className="learn-sidebar-skeleton" role="status" aria-live="polite" aria-busy="true">
+      <div className="learn-sidebar-skeleton__tab learn-shimmer" />
+      <div className="learn-sidebar-skeleton__tab learn-shimmer" />
+      <div className="learn-sidebar-skeleton__block learn-shimmer" />
+      <div className="learn-sidebar-skeleton__line learn-shimmer" />
+      <div className="learn-sidebar-skeleton__line learn-shimmer" />
+      <div className="learn-sidebar-skeleton__line learn-shimmer learn-sidebar-skeleton__line--short" />
+    </div>
+  );
+}
+
 export function CourseLearningView({ course, certificateCourseId }: Props) {
   const { t } = useTranslation();
   const { companyName } = useSiteBranding();
@@ -48,11 +72,13 @@ export function CourseLearningView({ course, certificateCourseId }: Props) {
   const courseHref = academyCourseDetailPath(course.slug, certificateCourseId);
   const units = course.units ?? [];
   const flat = useMemo(() => flattenLessons(units), [units]);
-  const [activeLessonId, setActiveLessonId] = useState(flat[0]?.lesson.id ?? '');
+  const [activeLessonId, setActiveLessonId] = useState('');
   const [playing, setPlaying] = useState(false);
   const [videoStarted, setVideoStarted] = useState(false);
   const [rightTab, setRightTab] = useState<'notes' | 'files'>('notes');
   const [completedIds, setCompletedIds] = useState<Set<string>>(() => new Set());
+  const [progressReady, setProgressReady] = useState(false);
+  const [lessonContentReady, setLessonContentReady] = useState(false);
   const [expandedUnits, setExpandedUnits] = useState<Record<string, boolean>>(() => {
     const initial: Record<string, boolean> = {};
     for (const unit of units) initial[unit.id] = true;
@@ -60,72 +86,25 @@ export function CourseLearningView({ course, certificateCourseId }: Props) {
   });
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const seekToRef = useRef<number | null>(null);
-  const activeRef = useRef(flat[0]);
+  const activeRef = useRef<(typeof flat)[number] | null>(null);
   const authenticatedRef = useRef(isAuthenticated);
   const videoStartedRef = useRef(false);
-  const restorePendingRef = useRef(false);
+  const isRestoringProgressRef = useRef(false);
   const activeLessonIdRef = useRef(activeLessonId);
 
-  const active = flat.find((item) => item.lesson.id === activeLessonId) ?? flat[0];
+  const active = activeLessonId
+    ? flat.find((item) => item.lesson.id === activeLessonId) ?? null
+    : null;
   activeRef.current = active;
   authenticatedRef.current = isAuthenticated;
   activeLessonIdRef.current = activeLessonId;
   const accessBlocked = authLoading || !isAuthenticated;
-  const allLessonIds = useMemo(() => flat.map((item) => item.lesson.id), [flat]);
+  const showLessonSkeleton = !active || (isAuthenticated && (!progressReady || !lessonContentReady));
 
-  useEffect(() => {
-    if (!isAuthenticated) {
-      setCompletedIds(new Set());
-      return;
-    }
-
-    let cancelled = false;
-    void getCourseLessonProgress(course.slug)
-      .then((progress) => {
-        if (cancelled) return;
-        setCompletedIds(new Set(progress.completedLessonIds ?? []));
-      })
-      .catch(() => {
-        if (!cancelled) setCompletedIds(new Set());
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [course.slug, isAuthenticated]);
-
-  useEffect(() => {
-    if (!isAuthenticated) return;
-    void touchCourseProgress(certificateCourseId).catch(() => undefined);
-  }, [certificateCourseId, isAuthenticated]);
-
-  useEffect(() => {
-    if (!isAuthenticated) return;
-    let cancelled = false;
-    void getCourseWatchProgress(certificateCourseId)
-      .then((payload) => {
-        if (cancelled) return;
-        const watch = payload.watch;
-        if (!watch?.lessonId || !watch.unitId) return;
-        const exists = flat.some((item) => item.lesson.id === watch.lessonId && item.unit.id === watch.unitId);
-        if (!exists) return;
-        seekToRef.current = watch.positionSeconds;
-        if (watch.lessonId === activeLessonIdRef.current) {
-          applySeek();
-          return;
-        }
-        restorePendingRef.current = true;
-        setActiveLessonId(watch.lessonId);
-      })
-      .catch(() => undefined);
-    return () => {
-      cancelled = true;
-    };
-  }, [certificateCourseId, isAuthenticated, flat]);
-
-  function saveWatchPosition() {
+  function persistWatchProgress() {
+    if (!authenticatedRef.current || isRestoringProgressRef.current) return;
     const current = activeRef.current;
-    if (!authenticatedRef.current || !current || !videoStartedRef.current) return;
+    if (!current) return;
     const seconds = Math.max(0, Math.floor(videoRef.current?.currentTime ?? 0));
     void touchCourseProgress(certificateCourseId, {
       unitId: current.unit.id,
@@ -145,36 +124,109 @@ export function CourseLearningView({ course, certificateCourseId }: Props) {
   }
 
   useEffect(() => {
-    if (!playing || !isAuthenticated) return;
-    const timer = window.setInterval(saveWatchPosition, 10_000);
+    if (authLoading) return;
+    if (!isAuthenticated) {
+      setCompletedIds(new Set());
+      if (flat[0]) setActiveLessonId(flat[0].lesson.id);
+      setProgressReady(true);
+      setLessonContentReady(true);
+      return;
+    }
+
+    setProgressReady(false);
+    setLessonContentReady(false);
+    setActiveLessonId('');
+    let cancelled = false;
+
+    void Promise.all([
+      getCourseLessonProgress(course.slug),
+      getCourseWatchProgress(certificateCourseId),
+    ])
+      .then(async ([progress, payload]) => {
+        if (cancelled) return;
+        setCompletedIds(new Set(progress.completedLessonIds ?? []));
+        const watch = payload.watch;
+
+        if (!watch?.lessonId || !watch?.unitId) {
+          const first = flat[0];
+          if (first) {
+            await touchCourseProgress(certificateCourseId, {
+              unitId: first.unit.id,
+              lessonId: first.lesson.id,
+              positionSeconds: 0,
+            }).catch(() => undefined);
+            seekToRef.current = null;
+            setActiveLessonId(first.lesson.id);
+          }
+          return;
+        }
+
+        const exists = flat.some((item) => item.lesson.id === watch.lessonId && item.unit.id === watch.unitId);
+        if (!exists) {
+          const first = flat[0];
+          if (first) {
+            seekToRef.current = null;
+            setActiveLessonId(first.lesson.id);
+          }
+          return;
+        }
+
+        isRestoringProgressRef.current = true;
+        seekToRef.current = watch.positionSeconds;
+        setActiveLessonId(watch.lessonId);
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setCompletedIds(new Set());
+          const first = flat[0];
+          if (first) {
+            seekToRef.current = null;
+            setActiveLessonId(first.lesson.id);
+          }
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setProgressReady(true);
+      });
+
     return () => {
-      window.clearInterval(timer);
-      saveWatchPosition();
+      cancelled = true;
     };
-  }, [playing, isAuthenticated, certificateCourseId]);
+  }, [authLoading, certificateCourseId, course.slug, flat, isAuthenticated]);
 
   useEffect(() => {
-    function onVisibility() {
-      if (document.visibilityState === 'hidden') saveWatchPosition();
-    }
-    document.addEventListener('visibilitychange', onVisibility);
-    window.addEventListener('pagehide', saveWatchPosition);
-    return () => {
-      document.removeEventListener('visibilitychange', onVisibility);
-      window.removeEventListener('pagehide', saveWatchPosition);
-    };
-  }, [certificateCourseId]);
+    if (!isAuthenticated || !progressReady || accessBlocked) return;
+    const timer = window.setInterval(() => {
+      persistWatchProgress();
+    }, 5_000);
+    return () => window.clearInterval(timer);
+  }, [isAuthenticated, progressReady, accessBlocked, certificateCourseId, activeLessonId]);
+
+  useEffect(() => {
+    if (!progressReady || !activeLessonId || lessonContentReady) return;
+    const item = flat.find((entry) => entry.lesson.id === activeLessonId);
+    if (!item || item.lesson.videoUrl) return;
+    isRestoringProgressRef.current = false;
+    setLessonContentReady(true);
+  }, [progressReady, activeLessonId, flat, lessonContentReady]);
+
+  useEffect(() => {
+    if (!progressReady || !activeLessonId || lessonContentReady) return;
+    const video = videoRef.current;
+    if (!video || video.readyState < 1) return;
+    handleLoadedMetadata();
+  }, [progressReady, activeLessonId, lessonContentReady, active?.lesson.id]);
 
   useEffect(() => {
     setPlaying(false);
     setVideoStarted(false);
     videoStartedRef.current = false;
     setRightTab('notes');
-    if (restorePendingRef.current) {
-      restorePendingRef.current = false;
-      requestAnimationFrame(() => applySeek());
+    if (seekToRef.current != null) {
+      isRestoringProgressRef.current = true;
       return;
     }
+    isRestoringProgressRef.current = false;
     if (videoRef.current) {
       videoRef.current.pause();
       videoRef.current.currentTime = 0;
@@ -196,12 +248,23 @@ export function CourseLearningView({ course, certificateCourseId }: Props) {
   }, [active]);
 
   function selectLesson(lessonId: string) {
+    if (lessonId === activeLessonIdRef.current) return;
     seekToRef.current = null;
+    const target = flat.find((item) => item.lesson.id === lessonId);
+    if (target && authenticatedRef.current) {
+      void touchCourseProgress(certificateCourseId, {
+        unitId: target.unit.id,
+        lessonId: target.lesson.id,
+        positionSeconds: 0,
+      }).catch(() => undefined);
+    }
     setActiveLessonId(lessonId);
   }
 
   function handleLoadedMetadata() {
     applySeek();
+    isRestoringProgressRef.current = false;
+    setLessonContentReady(true);
   }
 
   function markCompleted(lessonId: string) {
@@ -235,7 +298,7 @@ export function CourseLearningView({ course, certificateCourseId }: Props) {
     return unit.lessons.every((lesson) => completedIds.has(lesson.id));
   }
 
-  if (!active) {
+  if (!flat.length) {
     return (
       <div className="container" style={{ padding: '48px 24px' }}>
         <h1>{course.title}</h1>
@@ -245,7 +308,7 @@ export function CourseLearningView({ course, certificateCourseId }: Props) {
     );
   }
 
-  const materials = active.lesson.materials ?? [];
+  const materials = active?.lesson.materials ?? [];
 
   return (
     <div className={`learning-layout${accessBlocked ? ' is-gated' : ''}`}>
@@ -289,8 +352,14 @@ export function CourseLearningView({ course, certificateCourseId }: Props) {
         </div>
 
         <nav className="units-nav">
-          {units.map((unit, unitIndex) => {
-            const unitActive = active.unit.id === unit.id;
+          {isAuthenticated && !progressReady ? (
+            <div className="learn-nav-loading" role="status" aria-live="polite" aria-busy="true">
+              <span className="detail-inline-loading__spinner" aria-hidden="true" />
+              <span>{t('academy.home.loading')}</span>
+            </div>
+          ) : (
+          units.map((unit, unitIndex) => {
+            const unitActive = active?.unit.id === unit.id;
             const unitOpen = expandedUnits[unit.id] !== false;
             const unitDone = isUnitCompleted(unit);
             return (
@@ -319,7 +388,7 @@ export function CourseLearningView({ course, certificateCourseId }: Props) {
                 {unitOpen ? (
                   <div className="unit-lessons">
                     {unit.lessons.map((lesson) => {
-                      const lessonActive = lesson.id === active.lesson.id;
+                      const lessonActive = lesson.id === active?.lesson.id;
                       const lessonDone = completedIds.has(lesson.id);
                       return (
                         <button
@@ -345,52 +414,62 @@ export function CourseLearningView({ course, certificateCourseId }: Props) {
                 ) : null}
               </div>
             );
-          })}
+          })
+          )}
         </nav>
       </aside>
 
       <main className="learning-main">
-        <div className={`video-player${playing ? ' is-playing' : ''}`}>
-          {active.lesson.videoUrl ? (
-            <video
-              key={active.lesson.id}
-              ref={videoRef}
-              className="video-player__media"
-              src={active.lesson.videoUrl}
-              controls={videoStarted}
-              playsInline
-              preload="metadata"
-              onLoadedMetadata={handleLoadedMetadata}
-              onPlay={() => {
-                videoStartedRef.current = true;
-                setVideoStarted(true);
-                setPlaying(true);
-              }}
-              onPause={() => setPlaying(false)}
-              onEnded={() => {
-                setPlaying(false);
-                markCompleted(active.lesson.id);
-              }}
-            />
-          ) : (
-            <div className="video-player__empty">No video</div>
-          )}
-          {!videoStarted && active.lesson.videoUrl ? (
-            <button type="button" className="video-player__play" onClick={handlePlayClick} aria-label="Play video">
-              <svg viewBox="0 0 24 24" fill="currentColor" width="28" height="28">
-                <polygon points="5 3 19 12 5 21 5 3" />
-              </svg>
-            </button>
-          ) : null}
-        </div>
+        {showLessonSkeleton ? <LearnContentSkeleton /> : null}
+        {active ? (
+          <div className={`learn-content-panel${showLessonSkeleton ? ' learn-content-panel--preload' : ''}`}>
+            <div className={`video-player${playing ? ' is-playing' : ''}`}>
+              {active.lesson.videoUrl ? (
+                <video
+                  key={active.lesson.id}
+                  ref={videoRef}
+                  className="video-player__media"
+                  src={active.lesson.videoUrl}
+                  controls={videoStarted && !showLessonSkeleton}
+                  playsInline
+                  preload="metadata"
+                  onLoadedMetadata={handleLoadedMetadata}
+                  onError={() => {
+                    isRestoringProgressRef.current = false;
+                    setLessonContentReady(true);
+                  }}
+                  onPlay={() => {
+                    videoStartedRef.current = true;
+                    setVideoStarted(true);
+                    setPlaying(true);
+                  }}
+                  onPause={() => setPlaying(false)}
+                  onEnded={() => {
+                    setPlaying(false);
+                    markCompleted(active.lesson.id);
+                  }}
+                />
+              ) : (
+                <div className="video-player__empty">No video</div>
+              )}
+              {!videoStarted && active.lesson.videoUrl && !showLessonSkeleton ? (
+                <button type="button" className="video-player__play" onClick={handlePlayClick} aria-label="Play video">
+                  <svg viewBox="0 0 24 24" fill="currentColor" width="28" height="28">
+                    <polygon points="5 3 19 12 5 21 5 3" />
+                  </svg>
+                </button>
+              ) : null}
+            </div>
 
-        <div className="lesson-header">
-          <h1 className="lesson-header__title" title={active.lesson.title}>{active.lesson.title}</h1>
-        </div>
+            <div className="lesson-header">
+              <h1 className="lesson-header__title" title={active.lesson.title}>{active.lesson.title}</h1>
+            </div>
 
-        {active.lesson.description ? (
-          <div className="lesson-desc">
-            <p>{active.lesson.description}</p>
+            {active.lesson.description ? (
+              <div className="lesson-desc">
+                <p>{active.lesson.description}</p>
+              </div>
+            ) : null}
           </div>
         ) : null}
       </main>
@@ -401,6 +480,7 @@ export function CourseLearningView({ course, certificateCourseId }: Props) {
             type="button"
             className={`right-tab${rightTab === 'notes' ? ' is-active' : ''}`}
             onClick={() => setRightTab('notes')}
+            disabled={showLessonSkeleton}
           >
             {t('academy.learn.notesTab')}
           </button>
@@ -408,12 +488,16 @@ export function CourseLearningView({ course, certificateCourseId }: Props) {
             type="button"
             className={`right-tab${rightTab === 'files' ? ' is-active' : ''}`}
             onClick={() => setRightTab('files')}
+            disabled={showLessonSkeleton}
           >
-            {t('academy.learn.filesTab')}
+            {t('academy.learn.filesTabCount', { count: materials.length })}
           </button>
         </div>
 
-        {rightTab === 'notes' ? (
+        <div className="sidebar-right__body">
+        {showLessonSkeleton ? (
+          <LearnSidebarSkeleton />
+        ) : rightTab === 'notes' && active ? (
           <LessonNotesPanel
             lessonId={active.lesson.id}
             enabled={isAuthenticated}
@@ -448,6 +532,7 @@ export function CourseLearningView({ course, certificateCourseId }: Props) {
             )}
           </div>
         )}
+        </div>
       </aside>
     </div>
   );

@@ -16,6 +16,7 @@ import {
   recordCourseView,
   type AcademyWatchProgress,
 } from '@/lib/academy-home-api';
+import { getCourseLessonProgress } from '@/lib/academy-progress-api';
 import { buildAcademyHeroSlides } from '@/lib/academy-hero-media';
 import type {
   StorefrontAcademyCourseDetail,
@@ -52,6 +53,7 @@ export function CourseDetailView({ course, certificateCourseId }: Props) {
   const [tab, setTab] = useState<'about' | 'units'>('about');
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [watch, setWatch] = useState<AcademyWatchProgress | null>(null);
+  const [completedIds, setCompletedIds] = useState<Set<string>>(() => new Set());
   const [progressReady, setProgressReady] = useState(false);
   const learnHref = academyLearnPath(course.slug, certificateCourseId);
   const currentCertificate = (course.certificateLinks ?? []).find(
@@ -67,6 +69,7 @@ export function CourseDetailView({ course, certificateCourseId }: Props) {
   });
   const units = useMemo(() => course.units ?? [], [course.units]);
   const resume = useMemo(() => resolveWatch(watch, units), [watch, units]);
+  const progressLoading = isAuthenticated && !progressReady;
 
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -77,17 +80,26 @@ export function CourseDetailView({ course, certificateCourseId }: Props) {
     if (authLoading) return;
     if (!isAuthenticated) {
       setWatch(null);
+      setCompletedIds(new Set());
       setProgressReady(true);
       return;
     }
     setProgressReady(false);
     let cancelled = false;
-    void getCourseWatchProgress(certificateCourseId)
-      .then((payload) => {
-        if (!cancelled) setWatch(payload.watch ?? null);
+    void Promise.all([
+      getCourseWatchProgress(certificateCourseId),
+      getCourseLessonProgress(course.slug),
+    ])
+      .then(([watchPayload, lessonProgress]) => {
+        if (cancelled) return;
+        setWatch(watchPayload.watch ?? null);
+        setCompletedIds(new Set(lessonProgress.completedLessonIds ?? []));
       })
       .catch(() => {
-        if (!cancelled) setWatch(null);
+        if (!cancelled) {
+          setWatch(null);
+          setCompletedIds(new Set());
+        }
       })
       .finally(() => {
         if (!cancelled) setProgressReady(true);
@@ -95,10 +107,45 @@ export function CourseDetailView({ course, certificateCourseId }: Props) {
     return () => {
       cancelled = true;
     };
+  }, [authLoading, certificateCourseId, course.slug, isAuthenticated]);
+
+  useEffect(() => {
+    if (authLoading || !isAuthenticated) return;
+
+    function refreshWatchProgress() {
+      void getCourseWatchProgress(certificateCourseId)
+        .then((payload) => setWatch(payload.watch ?? null))
+        .catch(() => undefined);
+    }
+
+    function onVisibilityChange() {
+      if (document.visibilityState === 'visible') refreshWatchProgress();
+    }
+
+    window.addEventListener('focus', refreshWatchProgress);
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    return () => {
+      window.removeEventListener('focus', refreshWatchProgress);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+    };
   }, [authLoading, certificateCourseId, isAuthenticated]);
 
   function toggleUnit(id: string) {
     setExpanded((current) => ({ ...current, [id]: !current[id] }));
+  }
+
+  function isUnitComplete(unit: StorefrontAcademyUnitItem) {
+    if (!unit.lessons.length) return false;
+    return unit.lessons.every((lesson) => completedIds.has(lesson.id));
+  }
+
+  function renderProgressLoading() {
+    return (
+      <div className="detail-inline-loading" role="status" aria-live="polite" aria-busy="true">
+        <span className="detail-inline-loading__spinner" aria-hidden="true" />
+        <span>{t('academy.home.loading')}</span>
+      </div>
+    );
   }
 
   return (
@@ -115,7 +162,9 @@ export function CourseDetailView({ course, certificateCourseId }: Props) {
             ) : null}
             <h1>{course.title}</h1>
             <p className="hero__lead">{course.summary}</p>
-            {authLoading || (isAuthenticated && !progressReady) ? null : !isAuthenticated ? (
+            {isAuthenticated && !progressReady ? (
+              renderProgressLoading()
+            ) : !isAuthenticated ? (
               <div className="hero__actions">
                 <button type="button" className="btn-primary" onClick={() => openAuthModal('register')}>
                   {t('academy.auth.enroll')}
@@ -184,11 +233,19 @@ export function CourseDetailView({ course, certificateCourseId }: Props) {
             ) : (
               <>
                 <h2>{t('academy.course.modules')}</h2>
+                {progressLoading ? (
+                  renderProgressLoading()
+                ) : (
                 <div className="course-accordion">
                   {units.map((unit, index) => {
                     const isOpen = Boolean(expanded[unit.id]);
+                    const showProgress = isAuthenticated && progressReady;
+                    const unitComplete = showProgress && isUnitComplete(unit);
                     return (
-                      <div key={unit.id} className={`course-item${isOpen ? ' is-expanded' : ''}`}>
+                      <div
+                        key={unit.id}
+                        className={`course-item${isOpen ? ' is-expanded' : ''}${unitComplete ? ' is-complete' : ''}`}
+                      >
                         <div className="course-item__header">
                           <div className="course-item__info">
                             <span className="course-item__title course-item__title--static">{unit.title}</span>
@@ -197,6 +254,9 @@ export function CourseDetailView({ course, certificateCourseId }: Props) {
                                 index: index + 1,
                                 count: unit.lessons.length,
                               })}
+                              {unitComplete ? (
+                                <span className="course-item__badge">{t('academy.certificate.courseCompleted')}</span>
+                              ) : null}
                             </div>
                           </div>
                           <button
@@ -212,6 +272,22 @@ export function CourseDetailView({ course, certificateCourseId }: Props) {
                         </div>
                         {isOpen ? (
                           <div className="course-item__body">
+                            {showProgress ? (
+                              <div className="lesson-complete-list lesson-complete-list--course">
+                                {unit.lessons.map((lesson) => (
+                                  <div
+                                    key={lesson.id}
+                                    className={`lesson-complete-row${completedIds.has(lesson.id) ? ' is-complete' : ''}`}
+                                  >
+                                    <span className="lesson-complete-row__icon" aria-hidden="true">
+                                      {completedIds.has(lesson.id) ? '✓' : '·'}
+                                    </span>
+                                    <span className="lesson-complete-row__title">{lesson.title}</span>
+                                    <span className="lesson-complete-row__meta">{lesson.durationLabel}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
                             <div className="lesson-list">
                               {unit.lessons.map((lesson) => (
                                 <div key={lesson.id} className="lesson-row">
@@ -223,12 +299,14 @@ export function CourseDetailView({ course, certificateCourseId }: Props) {
                                 </div>
                               ))}
                             </div>
+                            )}
                           </div>
                         ) : null}
                       </div>
                     );
                   })}
                 </div>
+                )}
               </>
             )}
           </div>

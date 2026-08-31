@@ -23,6 +23,12 @@ export type CertificateLearningState = {
     certificateHref: string;
   } | null;
   continueLearnHref: string | null;
+  continueWatch: {
+    unitTitle: string;
+    lessonTitle: string;
+    positionSeconds: number;
+    durationSeconds: number;
+  } | null;
   courses: Array<{
     certificateCourseId: string;
     slug: string;
@@ -36,6 +42,7 @@ export type CertificateLearningState = {
       id: string;
       title: string;
       sortOrder: number;
+      isComplete: boolean;
       lessons: Array<{
         id: string;
         title: string;

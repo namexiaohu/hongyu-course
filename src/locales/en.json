@@ -90,6 +90,7 @@
       "viewCertificate": "View certificate",
       "notesTab": "Notes",
       "filesTab": "Files",
+      "filesTabCount": "Files ({count})",
       "notePlaceholder": "Add your study notes here...",
       "saveNote": "Save note",
       "savedNotes": "Saved notes ({count})",
