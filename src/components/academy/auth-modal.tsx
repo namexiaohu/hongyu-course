@@ -48,15 +48,6 @@ export function AuthModal() {
 
   useEffect(() => {
     if (!open) return;
-    function onKeyDown(event: KeyboardEvent) {
-      if (event.key === 'Escape') closeAuthModal();
-    }
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
-  }, [open, closeAuthModal]);
-
-  useEffect(() => {
-    if (!open) return;
     const previousOverflow = document.body.style.overflow;
     const previousPaddingRight = document.body.style.paddingRight;
     const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
@@ -139,7 +130,7 @@ export function AuthModal() {
   }
 
   return (
-    <div className="auth-modal-overlay" role="presentation" onClick={closeAuthModal}>
+    <div className="auth-modal-overlay" role="presentation">
       <div
         className="auth-modal"
         role="dialog"
