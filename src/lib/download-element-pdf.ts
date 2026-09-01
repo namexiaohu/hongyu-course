@@ -33,9 +33,42 @@ export async function downloadElementAsPdf(element: HTMLElement, filename: strin
         injectExportStyles(clonedDoc);
         clonedElement.classList.add('is-pdf-export');
         clonedElement.querySelectorAll<HTMLElement>('.cert-badge').forEach((node) => {
+          node.style.display = 'inline-table';
+          node.style.height = '36px';
+          node.style.padding = '0';
+          node.style.borderCollapse = 'separate';
+          node.style.borderSpacing = '0';
+          node.style.boxSizing = 'border-box';
           node.style.background = 'rgba(20, 110, 245, 0.06)';
           node.style.borderColor = 'rgba(20, 110, 245, 0.2)';
           node.style.color = '#146ef5';
+        });
+        clonedElement.querySelectorAll<HTMLElement>('.cert-badge-label').forEach((node) => {
+          node.style.display = 'table-cell';
+          node.style.verticalAlign = 'middle';
+          node.style.textAlign = 'center';
+          node.style.padding = '0 18px';
+          node.style.lineHeight = '13px';
+          node.style.fontSize = '13px';
+        });
+        clonedElement.querySelectorAll<HTMLElement>('.cert-name-wrap').forEach((node) => {
+          node.style.display = 'inline-block';
+          node.style.borderBottom = 'none';
+          node.style.paddingBottom = '0';
+          node.style.boxSizing = 'border-box';
+        });
+        clonedElement.querySelectorAll<HTMLElement>('.cert-name').forEach((node) => {
+          node.style.margin = '0';
+          node.style.padding = '0';
+          node.style.lineHeight = '1.2';
+          node.style.borderBottom = 'none';
+        });
+        clonedElement.querySelectorAll<HTMLElement>('.cert-name-line').forEach((node) => {
+          node.style.display = 'block';
+          node.style.height = '2px';
+          node.style.width = '100%';
+          node.style.marginTop = '22px';
+          node.style.background = '#080808';
         });
       },
     });

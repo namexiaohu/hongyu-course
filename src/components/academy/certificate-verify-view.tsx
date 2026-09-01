@@ -97,10 +97,15 @@ export function CertificateVerifyView({ certificateNumber }: Props) {
               </svg>
             </div>
 
-            <div className="cert-badge">{t('academy.verify.badge')}</div>
+            <div className="cert-badge">
+              <span className="cert-badge-label">{t('academy.verify.badge')}</span>
+            </div>
             <h2 className="cert-title">{cert.title}</h2>
             <p className="cert-awarded">{t('academy.verify.awarded')}</p>
-            <div className="cert-name">{cert.recipientName}</div>
+            <div className="cert-name-wrap">
+              <div className="cert-name">{cert.recipientName}</div>
+              <div className="cert-name-line" aria-hidden />
+            </div>
             <p className="cert-course">
               {t('academy.verify.completed')} <strong>{cert.title}</strong>
             </p>

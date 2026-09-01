@@ -63,9 +63,10 @@ export const CERTIFICATE_EXPORT_CSS = `
 .cert-logo { margin-bottom: 20px; }
 .cert-logo svg { display: block; }
 .cert-badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 6px 18px;
+  display: inline-table;
+  height: 36px;
+  border-collapse: separate;
+  border-spacing: 0;
   background: rgba(20, 110, 245, 0.06);
   border: 1px solid rgba(20, 110, 245, 0.2);
   border-radius: 999px;
@@ -75,6 +76,15 @@ export const CERTIFICATE_EXPORT_CSS = `
   letter-spacing: 1.5px;
   text-transform: uppercase;
   margin-bottom: 24px;
+  box-sizing: border-box;
+}
+.cert-badge-label {
+  display: table-cell;
+  vertical-align: middle;
+  text-align: center;
+  padding: 0 18px;
+  line-height: 13px;
+  font-size: 13px;
 }
 .cert-title {
   font-family: Georgia, "Times New Roman", serif;
@@ -92,16 +102,26 @@ export const CERTIFICATE_EXPORT_CSS = `
   letter-spacing: 2px;
   margin: 0 0 12px;
 }
+.cert-name-wrap {
+  display: inline-block;
+  min-width: 240px;
+  margin-bottom: 8px;
+  box-sizing: border-box;
+}
 .cert-name {
   font-family: Georgia, "Times New Roman", serif;
   font-size: 36px;
   font-weight: 400;
+  line-height: 1.2;
   color: #080808;
-  border-bottom: 2px solid #080808;
-  padding-bottom: 8px;
-  margin-bottom: 8px;
-  display: inline-block;
-  min-width: 240px;
+  margin: 0;
+  padding: 0;
+}
+.cert-name-line {
+  height: 2px;
+  width: 100%;
+  margin-top: 22px;
+  background: #080808;
 }
 .cert-course {
   color: #363636;
