@@ -16,7 +16,7 @@ export default async function SearchPage({
 
   const page = parsePage(rawPage);
   const { locale } = await getStorefrontLocaleContext();
-  const { t } = await getPageTranslations(locale, ['academy']);
+  const { t } = await getPageTranslations(locale, ['academy', 'common']);
   const list = await getStorefrontAcademyCertificateList({ locale, page, q });
   const titleTemplate = t('academy.catalog.resultsTitle');
   const [titleBefore, titleAfter] = titleTemplate.split('{query}');
@@ -41,6 +41,9 @@ export default async function SearchPage({
         return `/search?${params.toString()}`;
       }}
       skillsPrefix={t('academy.certificate.skills')}
+      paginationAriaLabel={t('common.pagination')}
+      previousPageAriaLabel={t('common.previousPage')}
+      nextPageAriaLabel={t('common.nextPage')}
     />
   );
 }

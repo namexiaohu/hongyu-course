@@ -2,7 +2,7 @@ import { unstable_cache } from 'next/cache';
 
 import { getApiBaseUrl } from '@/lib/api-client';
 
-const UI_STRINGS_CACHE_TAG = 'ui-strings';
+const UI_STRINGS_CACHE_TAG = 'course-ui-strings';
 
 const UI_STRINGS_REVALIDATE_SECONDS =
   process.env.NODE_ENV === 'development' ? 30 : 60 * 60;
@@ -35,7 +35,7 @@ async function fetchUiStringsFromApi(options: FetchUiStringsOptions): Promise<Re
 
   const base = getApiBaseUrl().replace(/\/+$/, '');
   try {
-    const response = await fetch(`${base}/api/front/ui-strings?${params.toString()}`, {
+    const response = await fetch(`${base}/api/front/course-ui-strings?${params.toString()}`, {
       next: { revalidate: UI_STRINGS_REVALIDATE_SECONDS, tags: [UI_STRINGS_CACHE_TAG] },
     });
     if (!response.ok) {
@@ -52,7 +52,7 @@ export async function fetchUiStrings(options: FetchUiStringsOptions): Promise<Re
   const cacheKey = buildCacheKey(options);
   return unstable_cache(
     async () => fetchUiStringsFromApi(options),
-    ['ui-strings', cacheKey],
+    ['course-ui-strings', cacheKey],
     { revalidate: UI_STRINGS_REVALIDATE_SECONDS, tags: [UI_STRINGS_CACHE_TAG] },
   )();
 }

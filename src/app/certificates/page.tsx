@@ -11,7 +11,7 @@ export default async function CertificatesPage({
   const { page: rawPage } = await searchParams;
   const page = parsePage(rawPage);
   const { locale } = await getStorefrontLocaleContext();
-  const { t } = await getPageTranslations(locale, ['academy']);
+  const { t } = await getPageTranslations(locale, ['academy', 'common']);
   const list = await getStorefrontAcademyCertificateList({ locale, page });
 
   return (
@@ -24,6 +24,9 @@ export default async function CertificatesPage({
       total={list.total}
       pageHref={(target) => (target <= 1 ? '/certificates' : `/certificates?page=${target}`)}
       skillsPrefix={t('academy.certificate.skills')}
+      paginationAriaLabel={t('common.pagination')}
+      previousPageAriaLabel={t('common.previousPage')}
+      nextPageAriaLabel={t('common.nextPage')}
     />
   );
 }

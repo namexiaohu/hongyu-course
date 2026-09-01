@@ -1,4 +1,11 @@
 {
+  "common": {
+    "notFound": "Not Found",
+    "pagination": "Pagination",
+    "previousPage": "Previous page",
+    "nextPage": "Next page",
+    "emptyDash": "—"
+  },
   "language": {
     "switchAriaLabel": "Language switch, current {language}",
     "selectLanguage": "Select language"
@@ -28,7 +35,11 @@
       "startNow": "Start now",
       "enrolled": "learners enrolled",
       "videoMeta": "Video · {watched}/{duration}s",
-      "loading": "Loading your learning…"
+      "loading": "Loading your learning…",
+      "courseCount": "{count} courses"
+    },
+    "brand": {
+      "fallbackName": "HONGYU MEDICAL"
     },
     "certificate": {
       "about": "About",
@@ -98,7 +109,13 @@
       "noteDelete": "Delete",
       "noteDeleteConfirm": "Delete this note?",
       "noteDeleteCancel": "Cancel",
-      "noteDeleteOk": "Delete"
+      "noteDeleteOk": "Delete",
+      "noLessons": "No lessons available yet.",
+      "backToCourse": "Back to course",
+      "unitLabel": "Unit {index}",
+      "noVideo": "No video",
+      "playVideo": "Play video",
+      "noFiles": "No files for this lesson."
     },
     "auth": {
       "login": "Log in",

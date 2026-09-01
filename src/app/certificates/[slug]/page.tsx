@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
 
 import { CertificateDetailView } from '@/components/academy/certificate-detail-view';
-import { getStorefrontLocaleContext } from '@/lib/i18n-server';
+import { getPageTranslations, getStorefrontLocaleContext } from '@/lib/i18n-server';
 import { getStorefrontAcademyCertificateBySlug } from '@/lib/storefront-academy-certificates-api';
 
 type PageProps = { params: Promise<{ slug: string }> };
@@ -9,8 +9,9 @@ type PageProps = { params: Promise<{ slug: string }> };
 export async function generateMetadata({ params }: PageProps) {
   const { slug } = await params;
   const { locale } = await getStorefrontLocaleContext();
+  const { t } = await getPageTranslations(locale, ['common']);
   const certificate = await getStorefrontAcademyCertificateBySlug(slug, locale);
-  if (!certificate) return { title: 'Not Found' };
+  if (!certificate) return { title: t('common.notFound') };
   return { title: certificate.seo.title, description: certificate.seo.description };
 }
 

@@ -7,7 +7,7 @@ import { getStorefrontAcademyCertificateList } from '@/lib/storefront-academy-ce
 
 export default async function HomePage() {
   const { locale } = await getStorefrontLocaleContext();
-  const { t } = await getPageTranslations(locale, ['academy']);
+  const { t } = await getPageTranslations(locale, ['academy', 'common']);
   const list = await getStorefrontAcademyCertificateList({ locale, pageSize: 4 });
 
   return (
@@ -47,7 +47,7 @@ export default async function HomePage() {
                     <p className="cert-card__meta cert-card__meta--icons">
                       <span className="cert-card__meta-item">
                         <CoursesIcon />
-                        {item.courseCount} courses
+                        {t('academy.home.courseCount', { count: item.courseCount })}
                       </span>
                       <span className="cert-card__meta-dot" aria-hidden>·</span>
                       <span className="cert-card__meta-item">

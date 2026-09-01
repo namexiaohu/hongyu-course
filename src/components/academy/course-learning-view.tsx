@@ -276,8 +276,8 @@ export function CourseLearningView({ course, certificateCourseId }: Props) {
     return (
       <div className="container" style={{ padding: '48px 24px' }}>
         <h1>{course.title}</h1>
-        <p>No lessons available yet.</p>
-        <Link href={courseHref} className="btn-secondary">Back to course</Link>
+        <p>{t('academy.learn.noLessons')}</p>
+        <Link href={courseHref} className="btn-secondary">{t('academy.learn.backToCourse')}</Link>
       </div>
     );
   }
@@ -353,7 +353,7 @@ export function CourseLearningView({ course, certificateCourseId }: Props) {
                     ) : null}
                   </span>
                   <span className="unit-header__label">
-                    <span className="unit-header__index">Unit {unitIndex + 1}</span>
+                    <span className="unit-header__index">{t('academy.learn.unitLabel', { index: unitIndex + 1 })}</span>
                     <span className="unit-header__title">{unit.title}</span>
                   </span>
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
@@ -425,10 +425,10 @@ export function CourseLearningView({ course, certificateCourseId }: Props) {
                   }}
                 />
               ) : (
-                <div className="video-player__empty">No video</div>
+                <div className="video-player__empty">{t('academy.learn.noVideo')}</div>
               )}
               {!videoStarted && active.lesson.videoUrl && !showLessonSkeleton ? (
-                <button type="button" className="video-player__play" onClick={handlePlayClick} aria-label="Play video">
+                <button type="button" className="video-player__play" onClick={handlePlayClick} aria-label={t('academy.learn.playVideo')}>
                   <svg viewBox="0 0 24 24" fill="currentColor" width="28" height="28">
                     <polygon points="5 3 19 12 5 21 5 3" />
                   </svg>
@@ -503,7 +503,7 @@ export function CourseLearningView({ course, certificateCourseId }: Props) {
                 </a>
               ))
             ) : (
-              <p className="files-empty">No files for this lesson.</p>
+              <p className="files-empty">{t('academy.learn.noFiles')}</p>
             )}
           </div>
         )}

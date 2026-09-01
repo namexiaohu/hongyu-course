@@ -14,6 +14,9 @@ type Props = {
   total: number;
   pageHref: (page: number) => string;
   skillsPrefix: string;
+  paginationAriaLabel: string;
+  previousPageAriaLabel: string;
+  nextPageAriaLabel: string;
 };
 
 export function CertificateCatalogView({
@@ -25,6 +28,9 @@ export function CertificateCatalogView({
   total,
   pageHref,
   skillsPrefix,
+  paginationAriaLabel,
+  previousPageAriaLabel,
+  nextPageAriaLabel,
 }: Props) {
   const pageCount = Math.ceil(total / pageSize);
 
@@ -49,9 +55,9 @@ export function CertificateCatalogView({
         ))}
       </div>
       {pageCount > 1 ? (
-        <nav className="catalog-pagination" aria-label="Pagination">
+        <nav className="catalog-pagination" aria-label={paginationAriaLabel}>
           {page > 1 ? (
-            <Link className="catalog-page-btn" href={pageHref(page - 1)} aria-label="Previous page">
+            <Link className="catalog-page-btn" href={pageHref(page - 1)} aria-label={previousPageAriaLabel}>
               ‹
             </Link>
           ) : (
@@ -67,7 +73,7 @@ export function CertificateCatalogView({
             </Link>
           ))}
           {page < pageCount ? (
-            <Link className="catalog-page-btn" href={pageHref(page + 1)} aria-label="Next page">
+            <Link className="catalog-page-btn" href={pageHref(page + 1)} aria-label={nextPageAriaLabel}>
               ›
             </Link>
           ) : (

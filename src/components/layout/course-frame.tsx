@@ -84,7 +84,7 @@ export function CourseFrame({ children, languages, locale, branding }: Props) {
       <header className={`course-nav${isLearning ? ' course-nav--learn' : ''}`}>
         <div className={`course-nav__inner${isLearning ? ' course-nav__inner--learn' : ''}`}>
           <div className="course-nav__left">
-            <SiteLogo companyName={branding.companyName} />
+            <SiteLogo companyName={branding.companyName} fallbackName={t('academy.brand.fallbackName')} />
             {!isLearning ? (
               <nav className="course-nav__links">
                 <Link href="/certificates">{t('academy.nav.explore')}</Link>

@@ -23,8 +23,13 @@ function optionLetter(index: number) {
   return String.fromCharCode(65 + index);
 }
 
-function formatAnswer(content: Record<string, unknown>, type: string, answer: unknown): string {
-  if (answer === null || answer === undefined) return '—';
+function formatAnswer(
+  content: Record<string, unknown>,
+  type: string,
+  answer: unknown,
+  t: (key: string) => string,
+): string {
+  if (answer === null || answer === undefined) return t('common.emptyDash');
   if (type === 'single_choice') {
     const options = (content as { options?: string[] }).options ?? [];
     return typeof answer === 'number' ? (options[answer] ?? String(answer)) : String(answer);
@@ -35,12 +40,20 @@ function formatAnswer(content: Record<string, unknown>, type: string, answer: un
     return answer.map((index) => options[Number(index)] ?? index).join(', ');
   }
   if (type === 'true_false') {
-    return answer === true ? 'True' : answer === false ? 'False' : String(answer);
+    return answer === true
+      ? t('academy.exam.trueLabel')
+      : answer === false
+        ? t('academy.exam.falseLabel')
+        : String(answer);
   }
   return String(answer);
 }
 
-function formatCorrectAnswer(content: Record<string, unknown>, type: string): string {
+function formatCorrectAnswer(
+  content: Record<string, unknown>,
+  type: string,
+  t: (key: string) => string,
+): string {
   if (type === 'single_choice') {
     const c = content as { options: string[]; correctAnswerIndex: number };
     const index = c.correctAnswerIndex;
@@ -58,7 +71,7 @@ function formatCorrectAnswer(content: Record<string, unknown>, type: string): st
   }
   if (type === 'true_false') {
     const c = content as { correctAnswer: boolean };
-    return c.correctAnswer ? 'True' : 'False';
+    return c.correctAnswer ? t('academy.exam.trueLabel') : t('academy.exam.falseLabel');
   }
   const c = content as { correctAnswer: string };
   return c.correctAnswer;
@@ -309,7 +322,7 @@ export function ExamResultView({ certificateSlug, attemptId, source }: Props) {
                                 {t('academy.result.correctAnswer')}
                               </span>
                               <span className="review-answer-text">
-                                {formatCorrectAnswer(item.content, item.questionType)}
+                                {formatCorrectAnswer(item.content, item.questionType, t)}
                               </span>
                             </div>
                           </div>
@@ -322,14 +335,14 @@ export function ExamResultView({ certificateSlug, attemptId, source }: Props) {
                             {t('academy.result.yourAnswer')}
                           </span>
                           <span className="review-answer-text">
-                            {formatAnswer(item.content, item.questionType, item.userAnswer)}
+                            {formatAnswer(item.content, item.questionType, item.userAnswer, t)}
                           </span>
                         </div>
                         {!item.isCorrect ? (
                           <div className="review-answer-row correct-answer">
                             <span className="review-answer-label correct">{t('academy.result.correctAnswer')}</span>
                             <span className="review-answer-text">
-                              {formatCorrectAnswer(item.content, item.questionType)}
+                              {formatCorrectAnswer(item.content, item.questionType, t)}
                             </span>
                           </div>
                         ) : null}

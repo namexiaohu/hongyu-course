@@ -34,6 +34,7 @@ export const UI_STRING_REGISTRY: Record<string, UiStringRegistryEntry> = {
 };
 
 export const UI_STRING_PREFETCH_GROUPS = [
+  'common',
   'language',
   'academy',
 ] as const;

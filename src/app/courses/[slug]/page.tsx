@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import { CourseDetailView } from '@/components/academy/course-detail-view';
 import { MissingCertificateContext } from '@/components/academy/missing-certificate-context';
 import { resolveCertificateCourseId } from '@/lib/academy-certificate-course';
-import { getStorefrontLocaleContext } from '@/lib/i18n-server';
+import { getPageTranslations, getStorefrontLocaleContext } from '@/lib/i18n-server';
 import { getStorefrontAcademyCourseBySlug } from '@/lib/storefront-academy-courses-api';
 
 type PageProps = {
@@ -14,8 +14,9 @@ type PageProps = {
 export async function generateMetadata({ params }: PageProps) {
   const { slug } = await params;
   const { locale } = await getStorefrontLocaleContext();
+  const { t } = await getPageTranslations(locale, ['common']);
   const course = await getStorefrontAcademyCourseBySlug(slug, locale);
-  if (!course) return { title: 'Not Found' };
+  if (!course) return { title: t('common.notFound') };
   return { title: course.seo.title, description: course.seo.description };
 }
 
