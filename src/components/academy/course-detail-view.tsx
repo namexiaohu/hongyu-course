@@ -17,6 +17,7 @@ import {
   recordCourseView,
   type AcademyWatchProgress,
 } from '@/lib/academy-home-api';
+import { formatLessonDuration } from '@/lib/format-lesson-duration';
 import { resolveWatchProgress } from '@/lib/academy-watch-progress';
 import { getCourseLessonProgress } from '@/lib/academy-progress-api';
 import { buildAcademyHeroSlides } from '@/lib/academy-hero-media';
@@ -259,7 +260,7 @@ export function CourseDetailView({ course, certificateCourseId }: Props) {
                                       {completedIds.has(lesson.id) ? '✓' : '·'}
                                     </span>
                                     <span className="lesson-complete-row__title">{lesson.title}</span>
-                                    <span className="lesson-complete-row__meta">{lesson.durationLabel}</span>
+                                    <span className="lesson-complete-row__meta">{formatLessonDuration(lesson.durationSeconds, t)}</span>
                                   </div>
                                 ))}
                               </div>
@@ -271,7 +272,7 @@ export function CourseDetailView({ course, certificateCourseId }: Props) {
                                     <polygon points="5 3 19 12 5 21 5 3" />
                                   </svg>
                                   <span className="lesson-row__title">{lesson.title}</span>
-                                  <span className="lesson-row__meta">{lesson.durationLabel}</span>
+                                  <span className="lesson-row__meta">{formatLessonDuration(lesson.durationSeconds, t)}</span>
                                 </div>
                               ))}
                             </div>

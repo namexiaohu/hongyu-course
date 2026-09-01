@@ -26,11 +26,11 @@ export type MyCertificateRecord = {
 export type PublicCertificate = {
   certificateNumber: string;
   title: string;
-  badge: string;
   issuerName: string;
   recipientName: string;
   issuedAt: string;
   certificateSlug: string;
+  locale?: string;
 };
 
 export async function listMyExams() {

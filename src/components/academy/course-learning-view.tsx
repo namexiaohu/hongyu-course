@@ -13,6 +13,7 @@ import { academyCourseDetailPath } from '@/lib/academy-certificate-course';
 import { getCourseWatchProgress, touchCourseProgress } from '@/lib/academy-home-api';
 import { getCourseLessonProgress, markCourseLessonCompleted } from '@/lib/academy-progress-api';
 import { formatFileSize } from '@/lib/format-file-size';
+import { formatLessonDuration } from '@/lib/format-lesson-duration';
 import type {
   StorefrontAcademyCourseDetail,
   StorefrontAcademyLessonItem,
@@ -381,7 +382,7 @@ export function CourseLearningView({ course, certificateCourseId }: Props) {
                             ) : null}
                           </span>
                           <span className="lesson-nav-title">{lesson.title}</span>
-                          <span className="lesson-nav-type">{lesson.durationLabel}</span>
+                          <span className="lesson-nav-type">{formatLessonDuration(lesson.durationSeconds, t)}</span>
                         </button>
                       );
                     })}

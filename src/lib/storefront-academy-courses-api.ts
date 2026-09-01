@@ -14,7 +14,6 @@ export type StorefrontAcademyLessonItem = {
   description: string;
   videoUrl: string;
   durationSeconds: number;
-  durationLabel: string;
   sortOrder: number;
   materials: StorefrontAcademyLessonMaterial[];
 };

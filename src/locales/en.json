@@ -115,7 +115,13 @@
       "unitLabel": "Unit {index}",
       "noVideo": "No video",
       "playVideo": "Play video",
-      "noFiles": "No files for this lesson."
+      "noFiles": "No files for this lesson.",
+      "defaultAttachmentName": "Attachment",
+      "duration": {
+        "seconds": "{seconds}s",
+        "minutesSeconds": "{minutes}:{seconds}",
+        "hoursMinutesSeconds": "{hours}:{minutes}:{seconds}"
+      }
     },
     "auth": {
       "login": "Log in",
