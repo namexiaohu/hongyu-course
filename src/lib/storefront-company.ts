@@ -44,26 +44,6 @@ export type StorefrontCompanyBranding = {
   icpNumber: string;
 };
 
-export const EMPTY_COMPANY_PROFILE: StorefrontCompanyProfile = {
-  locale: '',
-  companyName: '',
-  slogan: '',
-  positioning: '',
-  copyright: '',
-  companyEmail: '',
-  businessEmail: '',
-  website: '',
-  icpNumber: '',
-  contactPhone: '',
-  address: '',
-  businessHours: '',
-  businessHotline: '',
-  basicInfo: [],
-  managementTeam: [],
-  offices: [],
-  publicFiles: [],
-};
-
 export function toStorefrontCompanyBranding(
   company: Pick<StorefrontCompanyProfile, 'companyName' | 'positioning' | 'copyright' | 'website' | 'icpNumber'>,
 ): StorefrontCompanyBranding {

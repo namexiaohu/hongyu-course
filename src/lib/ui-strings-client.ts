@@ -34,18 +34,14 @@ async function fetchUiStringsFromApi(options: FetchUiStringsOptions): Promise<Re
   }
 
   const base = getApiBaseUrl().replace(/\/+$/, '');
-  try {
-    const response = await fetch(`${base}/api/front/course-ui-strings?${params.toString()}`, {
-      next: { revalidate: UI_STRINGS_REVALIDATE_SECONDS, tags: [UI_STRINGS_CACHE_TAG] },
-    });
-    if (!response.ok) {
-      return {};
-    }
-    const payload = (await response.json()) as UiStringsResponse;
-    return payload.strings ?? {};
-  } catch {
-    return {};
+  const response = await fetch(`${base}/api/front/course-ui-strings?${params.toString()}`, {
+    next: { revalidate: UI_STRINGS_REVALIDATE_SECONDS, tags: [UI_STRINGS_CACHE_TAG] },
+  });
+  if (!response.ok) {
+    throw new Error(`Failed to fetch course UI strings (${response.status})`);
   }
+  const payload = (await response.json()) as UiStringsResponse;
+  return payload.strings ?? {};
 }
 
 export async function fetchUiStrings(options: FetchUiStringsOptions): Promise<Record<string, string>> {

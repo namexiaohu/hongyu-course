@@ -4,15 +4,7 @@ import { createContext, useContext } from 'react';
 
 import type { StorefrontCompanyBranding } from '@/lib/storefront-company';
 
-const EMPTY_BRANDING: StorefrontCompanyBranding = {
-  companyName: '',
-  positioning: '',
-  copyright: '',
-  website: '',
-  icpNumber: '',
-};
-
-const SiteBrandingContext = createContext<StorefrontCompanyBranding>(EMPTY_BRANDING);
+const SiteBrandingContext = createContext<StorefrontCompanyBranding | null>(null);
 
 type Props = {
   branding: StorefrontCompanyBranding;
@@ -28,5 +20,9 @@ export function SiteBrandingProvider({ branding, children }: Props) {
 }
 
 export function useSiteBranding() {
-  return useContext(SiteBrandingContext);
+  const branding = useContext(SiteBrandingContext);
+  if (!branding) {
+    throw new Error('useSiteBranding must be used within SiteBrandingProvider');
+  }
+  return branding;
 }

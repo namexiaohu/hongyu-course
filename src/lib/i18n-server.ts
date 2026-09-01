@@ -54,6 +54,6 @@ export function getServerTranslations(locale: Locale = 'en', uiStrings: Record<s
 }
 
 export async function getPageTranslations(locale: string, groups: string[]) {
-  const uiStrings = await fetchUiStringGroups(locale, groups).catch(() => ({}));
+  const uiStrings = await fetchUiStringGroups(locale, groups);
   return getServerTranslations(locale, uiStrings);
 }

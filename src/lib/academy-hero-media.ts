@@ -1,7 +1,7 @@
 type HeroCoverDisplay = {
-  video?: boolean;
-  cover?: boolean;
-  gallery?: boolean;
+  video: boolean;
+  cover: boolean;
+  gallery: boolean;
 };
 
 export type AcademyHeroMediaInput = {
@@ -10,7 +10,7 @@ export type AcademyHeroMediaInput = {
   videoUrl?: string | null;
   gallery?: Array<{ url: string; alt?: string }> | null;
   showCoverOnBackground?: boolean;
-  coverDisplay?: HeroCoverDisplay | null;
+  coverDisplay: HeroCoverDisplay;
 };
 
 export type AcademyHeroSlide = {
@@ -23,11 +23,7 @@ export type AcademyHeroSlide = {
 export function buildAcademyHeroSlides(input: AcademyHeroMediaInput): AcademyHeroSlide[] {
   if (!input.showCoverOnBackground) return [];
 
-  const display = {
-    video: input.coverDisplay?.video !== false,
-    cover: input.coverDisplay?.cover !== false,
-    gallery: input.coverDisplay?.gallery !== false,
-  };
+  const { coverDisplay: display } = input;
   const slides: AcademyHeroSlide[] = [];
   const seen = new Set<string>();
 

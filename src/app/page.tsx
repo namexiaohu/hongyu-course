@@ -34,7 +34,7 @@ export default async function HomePage() {
                     <h3 className="cert-card__title">{item.title}</h3>
                     {item.subtitle ? <p className="cert-card__subtitle">{item.subtitle}</p> : null}
                     {item.summary ? <p className="cert-card__summary">{item.summary}</p> : null}
-                    {item.skills?.length ? (
+                    {item.skills.length ? (
                       <>
                         <p className="cert-card-skills-label">{t('academy.certificate.skills')}</p>
                         <div className="cert-card-tags">

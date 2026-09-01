@@ -11,7 +11,7 @@ export type StorefrontAcademyCertificateListItem = {
   teacherCount: number;
   studentCount: number;
   courseCount: number;
-  skills?: string[];
+  skills: string[];
 };
 
 export type StorefrontAcademyCertificateCourseItem = {

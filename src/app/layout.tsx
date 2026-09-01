@@ -7,7 +7,6 @@ import { AuthProvider } from '@/components/providers/auth-provider';
 import { SiteBrandingProvider } from '@/components/providers/site-branding-provider';
 import { I18nProvider } from '@/lib/i18n-context';
 import { getStorefrontLocaleContext } from '@/lib/i18n-server';
-import { DEFAULT_SEO_DESCRIPTION, DEFAULT_SEO_TITLE } from '@/lib/site-config';
 import { getStorefrontCompanyProfile } from '@/lib/storefront-company-api';
 import { toStorefrontCompanyBranding } from '@/lib/storefront-company';
 import { fetchUiStringGroups } from '@/lib/ui-strings-client';
@@ -30,10 +29,10 @@ export async function generateMetadata(): Promise<Metadata> {
 
   return {
     title: {
-      default: companyName || DEFAULT_SEO_TITLE,
-      template: companyName ? `%s · ${companyName}` : `%s · ${DEFAULT_SEO_TITLE}`,
+      default: companyName,
+      template: companyName ? `%s · ${companyName}` : '%s',
     },
-    description: company.positioning.trim() || DEFAULT_SEO_DESCRIPTION,
+    description: company.positioning.trim(),
   };
 }
 
@@ -41,7 +40,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   const { locale, languages, htmlLang, direction } = await getStorefrontLocaleContext();
   const [company, uiStrings] = await Promise.all([
     getStorefrontCompanyProfile(locale),
-    fetchUiStringGroups(locale, [...UI_STRING_PREFETCH_GROUPS]).catch(() => ({})),
+    fetchUiStringGroups(locale, [...UI_STRING_PREFETCH_GROUPS]),
   ]);
   const branding = toStorefrontCompanyBranding(company);
 

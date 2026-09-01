@@ -12,42 +12,6 @@ export type StorefrontLanguage = {
   sortOrder: number;
 };
 
-export const FALLBACK_STOREFRONT_LANGUAGES: StorefrontLanguage[] = [
-  {
-    code: 'zh-CN',
-    name: 'Chinese (Simplified)',
-    nativeName: '简体中文',
-    region: 'Global',
-    direction: 'ltr',
-    countryCodes: ['CN', 'SG'],
-    currencyCode: 'USD',
-    isDefault: true,
-    sortOrder: 0,
-  },
-  {
-    code: 'en',
-    name: 'English',
-    nativeName: 'English',
-    region: 'Global',
-    direction: 'ltr',
-    countryCodes: ['US', 'GB'],
-    currencyCode: 'USD',
-    isDefault: false,
-    sortOrder: 1,
-  },
-  {
-    code: 'es',
-    name: 'Spanish',
-    nativeName: 'Español',
-    region: 'Global',
-    direction: 'ltr',
-    countryCodes: ['ES'],
-    currencyCode: 'EUR',
-    isDefault: false,
-    sortOrder: 2,
-  },
-];
-
 export function sortStorefrontLanguages(languages: StorefrontLanguage[]) {
   return [...languages].sort((left, right) => {
     if (left.isDefault !== right.isDefault) return left.isDefault ? -1 : 1;
@@ -56,15 +20,23 @@ export function sortStorefrontLanguages(languages: StorefrontLanguage[]) {
   });
 }
 
+function requireStorefrontLanguages(languages: StorefrontLanguage[]) {
+  if (!languages.length) {
+    throw new Error('Storefront languages are not configured');
+  }
+  return languages;
+}
+
 export function getDefaultStorefrontLanguage(languages: StorefrontLanguage[]) {
-  return languages.find((item) => item.isDefault) ?? languages[0] ?? FALLBACK_STOREFRONT_LANGUAGES[0];
+  const available = requireStorefrontLanguages(languages);
+  return available.find((item) => item.isDefault) ?? available[0];
 }
 
 export function pickStorefrontLocale(
   preferred: string | null | undefined,
   languages: StorefrontLanguage[],
 ) {
-  const available = languages.length ? languages : FALLBACK_STOREFRONT_LANGUAGES;
+  const available = requireStorefrontLanguages(languages);
   const fallback = getDefaultStorefrontLanguage(available).code;
   const normalized = preferred?.trim().toLowerCase();
   if (!normalized) return fallback;
@@ -79,7 +51,7 @@ export function pickStorefrontLocale(
 }
 
 export function getStorefrontLanguage(code: string, languages: StorefrontLanguage[]) {
-  const available = languages.length ? languages : FALLBACK_STOREFRONT_LANGUAGES;
+  const available = requireStorefrontLanguages(languages);
   const picked = pickStorefrontLocale(code, available);
   return available.find((item) => item.code === picked) ?? getDefaultStorefrontLanguage(available);
 }
@@ -100,11 +72,7 @@ export function languageHtmlLang(language: StorefrontLanguage) {
 }
 
 export async function getStorefrontLanguages(): Promise<StorefrontLanguage[]> {
-  try {
-    const payload = await serverFetch<{ languages?: StorefrontLanguage[] }>('/api/front/languages');
-    const languages = sortStorefrontLanguages(payload.languages ?? []);
-    return languages.length ? languages : FALLBACK_STOREFRONT_LANGUAGES;
-  } catch {
-    return FALLBACK_STOREFRONT_LANGUAGES;
-  }
+  const payload = await serverFetch<{ languages: StorefrontLanguage[] }>('/api/front/languages');
+  const languages = sortStorefrontLanguages(payload.languages ?? []);
+  return requireStorefrontLanguages(languages);
 }
